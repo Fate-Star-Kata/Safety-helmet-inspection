@@ -169,37 +169,37 @@ const statusOptions = [
 // 计算属性
 const filteredRecords = computed(() => {
   let result = [...warningRecords.value]
-  
+
   // 关键词搜索
   if (filters.value.keyword) {
     const keyword = filters.value.keyword.toLowerCase()
-    result = result.filter(record => 
+    result = result.filter(record =>
       record.cameraName.toLowerCase().includes(keyword) ||
       record.location.toLowerCase().includes(keyword) ||
       record.description.toLowerCase().includes(keyword)
     )
   }
-  
+
   // 摄像头筛选
   if (filters.value.cameraId) {
     result = result.filter(record => record.cameraId === filters.value.cameraId)
   }
-  
+
   // 类型筛选
   if (filters.value.type) {
     result = result.filter(record => record.type === filters.value.type)
   }
-  
+
   // 严重程度筛选
   if (filters.value.severity) {
     result = result.filter(record => record.severity === filters.value.severity)
   }
-  
+
   // 状态筛选
   if (filters.value.status) {
     result = result.filter(record => record.status === filters.value.status)
   }
-  
+
   // 日期范围筛选
   if (filters.value.dateRange && filters.value.dateRange.length === 2) {
     const [startDate, endDate] = filters.value.dateRange
@@ -208,9 +208,9 @@ const filteredRecords = computed(() => {
       return recordDate >= new Date(startDate) && recordDate <= new Date(endDate)
     })
   }
-  
+
   total.value = result.length
-  
+
   // 分页
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
@@ -338,12 +338,12 @@ const handleProcess = async (record: WarningRecord) => {
       cancelButtonText: '取消',
       inputPlaceholder: '请输入处理备注'
     })
-    
+
     // 更新状态
     record.status = 'processing'
     record.processedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
     record.processedBy = '当前用户' // 实际应该从用户信息获取
-    
+
     ElMessage.success('警告处理成功')
   } catch (error) {
     // 用户取消
@@ -357,12 +357,12 @@ const handleResolve = async (record: WarningRecord) => {
       cancelButtonText: '取消',
       inputPlaceholder: '请输入解决方案'
     })
-    
+
     // 更新状态
     record.status = 'resolved'
     record.processedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
     record.processedBy = '当前用户'
-    
+
     ElMessage.success('警告已解决')
   } catch (error) {
     // 用户取消
@@ -376,11 +376,11 @@ const handleIgnore = async (record: WarningRecord) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
+
     record.status = 'ignored'
     record.processedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
     record.processedBy = '当前用户'
-    
+
     ElMessage.success('警告已忽略')
   } catch (error) {
     // 用户取消
@@ -392,21 +392,21 @@ const handleBatchProcess = async () => {
     ElMessage.warning('请选择要处理的记录')
     return
   }
-  
+
   try {
     await ElMessageBox.confirm(`确定要批量处理选中的 ${selectedRows.value.length} 条记录吗？`, '批量处理', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
+
     // 批量更新状态
     selectedRows.value.forEach(record => {
       record.status = 'processing'
       record.processedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
       record.processedBy = '当前用户'
     })
-    
+
     ElMessage.success(`成功处理 ${selectedRows.value.length} 条记录`)
     selectedRows.value = []
   } catch (error) {
@@ -489,7 +489,7 @@ onMounted(() => {
               </el-card>
             </Motion>
           </el-col>
-          
+
           <el-col :xs="24" :sm="12" :md="6" :lg="4">
             <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.2 } as any">
               <el-card class="stat-card pending-card" shadow="hover">
@@ -507,7 +507,7 @@ onMounted(() => {
               </el-card>
             </Motion>
           </el-col>
-          
+
           <el-col :xs="24" :sm="12" :md="6" :lg="4">
             <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.3 } as any">
               <el-card class="stat-card processing-card" shadow="hover">
@@ -525,7 +525,7 @@ onMounted(() => {
               </el-card>
             </Motion>
           </el-col>
-          
+
           <el-col :xs="24" :sm="12" :md="6" :lg="4">
             <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.4 } as any">
               <el-card class="stat-card resolved-card" shadow="hover">
@@ -543,7 +543,7 @@ onMounted(() => {
               </el-card>
             </Motion>
           </el-col>
-          
+
           <el-col :xs="24" :sm="12" :md="6" :lg="4">
             <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.5 } as any">
               <el-card class="stat-card critical-card" shadow="hover">
@@ -574,7 +574,7 @@ onMounted(() => {
               <el-icon><Filter /></el-icon>
             </div>
           </template>
-          
+
           <el-form :model="filters" label-width="80px" class="filter-form">
             <el-row :gutter="24">
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
@@ -591,7 +591,7 @@ onMounted(() => {
                   </el-input>
                 </el-form-item>
               </el-col>
-              
+
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="摄像头">
                   <el-select v-model="filters.cameraId" placeholder="选择摄像头" clearable>
@@ -604,7 +604,7 @@ onMounted(() => {
                   </el-select>
                 </el-form-item>
               </el-col>
-              
+
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="警告类型">
                   <el-select v-model="filters.type" placeholder="选择类型" clearable>
@@ -617,7 +617,7 @@ onMounted(() => {
                   </el-select>
                 </el-form-item>
               </el-col>
-              
+
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="严重程度">
                   <el-select v-model="filters.severity" placeholder="选择严重程度" clearable>
@@ -630,7 +630,7 @@ onMounted(() => {
                   </el-select>
                 </el-form-item>
               </el-col>
-              
+
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="状态">
                   <el-select v-model="filters.status" placeholder="选择状态" clearable>
@@ -643,7 +643,7 @@ onMounted(() => {
                   </el-select>
                 </el-form-item>
               </el-col>
-              
+
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="日期范围">
                   <el-date-picker
@@ -658,7 +658,7 @@ onMounted(() => {
                 </el-form-item>
               </el-col>
             </el-row>
-            
+
             <el-row>
               <el-col :span="24">
                 <div class="filter-actions">
@@ -692,9 +692,9 @@ onMounted(() => {
               <div class="table-actions">
                 <el-space>
                   <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
-                    <el-button 
-                      type="primary" 
-                      @click="handleBatchProcess" 
+                    <el-button
+                      type="primary"
+                      @click="handleBatchProcess"
                       :disabled="selectedRows.length === 0"
                     >
                       批量处理 ({{ selectedRows.length }})
@@ -704,7 +704,7 @@ onMounted(() => {
               </div>
             </div>
           </template>
-          
+
           <el-table
             :data="filteredRecords"
             v-loading="tableLoading"
@@ -714,9 +714,9 @@ onMounted(() => {
             style="width: 100%"
           >
             <el-table-column type="selection" width="55" />
-            
+
             <el-table-column prop="id" label="警告ID" width="100" />
-            
+
             <el-table-column label="摄像头信息" width="200">
               <template #default="{ row }">
                 <div class="camera-info">
@@ -731,7 +731,7 @@ onMounted(() => {
                 </div>
               </template>
             </el-table-column>
-            
+
             <el-table-column label="警告类型" width="120">
               <template #default="{ row }">
                 <el-tag :type="getTypeColor(row.type)" size="small">
@@ -739,7 +739,7 @@ onMounted(() => {
                 </el-tag>
               </template>
             </el-table-column>
-            
+
             <el-table-column label="严重程度" width="100">
               <template #default="{ row }">
                 <el-tag :type="getSeverityColor(row.severity)" size="small">
@@ -747,7 +747,7 @@ onMounted(() => {
                 </el-tag>
               </template>
             </el-table-column>
-            
+
             <el-table-column label="状态" width="100">
               <template #default="{ row }">
                 <el-tag :type="getStatusColor(row.status)" size="small">
@@ -755,9 +755,9 @@ onMounted(() => {
                 </el-tag>
               </template>
             </el-table-column>
-            
+
             <el-table-column prop="description" label="描述" min-width="200" />
-            
+
             <el-table-column label="检测信息" width="120">
               <template #default="{ row }">
                 <div class="detection-info">
@@ -767,13 +767,13 @@ onMounted(() => {
                 </div>
               </template>
             </el-table-column>
-            
+
             <el-table-column label="检测时间" width="160">
               <template #default="{ row }">
                 {{ formatDateTime(row.detectedAt) }}
               </template>
             </el-table-column>
-            
+
             <el-table-column label="处理信息" width="160">
               <template #default="{ row }">
                 <div v-if="row.processedAt" class="process-info">
@@ -786,7 +786,7 @@ onMounted(() => {
                 <span v-else class="text-gray-400">未处理</span>
               </template>
             </el-table-column>
-            
+
             <el-table-column label="操作" width="200" fixed="right">
               <template #default="{ row }">
                 <el-space>
@@ -795,34 +795,34 @@ onMounted(() => {
                       <el-icon><View /></el-icon>
                     </el-button>
                   </Motion>
-                  
+
                   <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }">
-                    <el-button 
+                    <el-button
                       v-if="row.status === 'pending'"
-                      type="warning" 
-                      size="small" 
+                      type="warning"
+                      size="small"
                       @click="handleProcess(row)"
                     >
                       处理
                     </el-button>
                   </Motion>
-                  
+
                   <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }">
-                    <el-button 
+                    <el-button
                       v-if="row.status === 'processing'"
-                      type="success" 
-                      size="small" 
+                      type="success"
+                      size="small"
                       @click="handleResolve(row)"
                     >
                       解决
                     </el-button>
                   </Motion>
-                  
+
                   <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }">
-                    <el-button 
+                    <el-button
                       v-if="row.status === 'pending'"
-                      type="info" 
-                      size="small" 
+                      type="info"
+                      size="small"
                       @click="handleIgnore(row)"
                     >
                       忽略
@@ -832,7 +832,7 @@ onMounted(() => {
               </template>
             </el-table-column>
           </el-table>
-          
+
           <!-- 分页 -->
           <div class="pagination-container">
             <el-pagination
@@ -855,7 +855,6 @@ onMounted(() => {
 .warnings-page {
   width: 100%;
   min-height: 100vh;
-  background: #f5f7fa;
 }
 
 .warnings-container {
@@ -1045,25 +1044,25 @@ onMounted(() => {
   .warnings-container {
     padding: 16px;
   }
-  
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .stats-row {
     margin-bottom: 16px;
   }
-  
+
   .filter-actions {
     text-align: left;
   }
-  
+
   .table-actions {
     margin-top: 8px;
   }
-  
+
   .pagination-container {
     text-align: center;
   }

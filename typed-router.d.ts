@@ -20,7 +20,6 @@ declare module 'vue-router/auto-routes' {
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
     '/admin/': RouteRecordInfo<'/admin/', '/admin', Record<never, never>, Record<never, never>>,
-    '/admin/Content/': RouteRecordInfo<'/admin/Content/', '/admin/Content', Record<never, never>, Record<never, never>>,
     '/admin/dashboard/': RouteRecordInfo<'/admin/dashboard/', '/admin/dashboard', Record<never, never>, Record<never, never>>,
     '/admin/export/': RouteRecordInfo<'/admin/export/', '/admin/export', Record<never, never>, Record<never, never>>,
     '/admin/settings/': RouteRecordInfo<'/admin/settings/', '/admin/settings', Record<never, never>, Record<never, never>>,
@@ -53,10 +52,6 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/admin/index.vue': {
       routes: '/admin/'
-      views: never
-    }
-    'src/pages/admin/Content/index.vue': {
-      routes: '/admin/Content/'
       views: never
     }
     'src/pages/admin/dashboard/index.vue': {

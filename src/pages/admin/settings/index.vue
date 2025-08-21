@@ -288,7 +288,7 @@ const handleSaveSettings = async () => {
   try {
     // 模拟API调用
     await new Promise(resolve => setTimeout(resolve, 1500))
-    
+
     // 根据当前标签页保存对应设置
     switch (activeTab.value) {
       case 'detection':
@@ -304,7 +304,7 @@ const handleSaveSettings = async () => {
         // 保存系统设置
         break
     }
-    
+
     ElMessage.success('设置保存成功')
   } catch (error) {
     ElMessage.error('设置保存失败')
@@ -320,7 +320,7 @@ const handleResetSettings = async () => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
+
     // 重置设置到默认值
     ElMessage.success('设置已重置')
   } catch (error) {
@@ -350,7 +350,7 @@ const handleSaveRule = () => {
     ElMessage.warning('请输入规则名称')
     return
   }
-  
+
   const rule: AlertRule = {
     id: `rule_${Date.now()}`,
     name: newRuleForm.name!,
@@ -360,10 +360,10 @@ const handleSaveRule = () => {
     actions: { ...newRuleForm.actions! },
     enabled: newRuleForm.enabled!
   }
-  
+
   alertRules.value.push(rule)
   showAddRuleDialog.value = false
-  
+
   // 重置表单
   Object.assign(newRuleForm, {
     name: '',
@@ -382,7 +382,7 @@ const handleSaveRule = () => {
     },
     enabled: true
   })
-  
+
   ElMessage.success('规则添加成功')
 }
 
@@ -393,7 +393,7 @@ const handleDeleteRule = async (rule: AlertRule) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
+
     const index = alertRules.value.findIndex(r => r.id === rule.id)
     if (index > -1) {
       alertRules.value.splice(index, 1)
@@ -479,11 +479,11 @@ onMounted(() => {
                   检测设置
                 </span>
               </template>
-              
+
               <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.1 } as any">
                 <div class="settings-section">
                   <h3 class="section-title">基础检测参数</h3>
-                  
+
                   <el-form :model="detectionSettings" label-width="140px" class="settings-form">
                     <el-row :gutter="24">
                       <el-col :xs="24" :sm="12" :md="8">
@@ -498,7 +498,7 @@ onMounted(() => {
                           />
                         </el-form-item>
                       </el-col>
-                      
+
                       <el-col :xs="24" :sm="12" :md="8">
                         <el-form-item label="检测间隔">
                           <el-input-number
@@ -511,7 +511,7 @@ onMounted(() => {
                           <span class="input-suffix">秒</span>
                         </el-form-item>
                       </el-col>
-                      
+
                       <el-col :xs="24" :sm="12" :md="8">
                         <el-form-item label="图像质量">
                           <el-select v-model="detectionSettings.image_quality" placeholder="选择图像质量">
@@ -524,7 +524,7 @@ onMounted(() => {
                           </el-select>
                         </el-form-item>
                       </el-col>
-                      
+
                       <el-col :xs="24" :sm="12" :md="8">
                         <el-form-item label="最大检测距离">
                           <el-input-number
@@ -537,7 +537,7 @@ onMounted(() => {
                           <span class="input-suffix">米</span>
                         </el-form-item>
                       </el-col>
-                      
+
                       <el-col :xs="24" :sm="12" :md="8">
                         <el-form-item label="工作时间">
                           <el-time-picker
@@ -556,21 +556,21 @@ onMounted(() => {
                         </el-form-item>
                       </el-col>
                     </el-row>
-                    
+
                     <el-row :gutter="24">
                       <el-col :xs="24" :sm="12">
                         <el-form-item label="保存检测图像">
                           <el-switch v-model="detectionSettings.save_detection_images" />
                         </el-form-item>
                       </el-col>
-                      
+
                       <el-col :xs="24" :sm="12">
                         <el-form-item label="周末检测">
                           <el-switch v-model="detectionSettings.weekend_detection" />
                         </el-form-item>
                       </el-col>
                     </el-row>
-                    
+
                     <el-form-item label="安全帽颜色">
                       <div class="color-picker-group">
                         <el-color-picker
@@ -595,7 +595,7 @@ onMounted(() => {
                   警告规则
                 </span>
               </template>
-              
+
               <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.1 } as any">
                 <div class="settings-section">
                   <div class="section-header">
@@ -607,7 +607,7 @@ onMounted(() => {
                       </el-button>
                     </Motion>
                   </div>
-                  
+
                   <div class="rules-list">
                     <Motion
                       v-for="(rule, index) in alertRules"
@@ -643,7 +643,7 @@ onMounted(() => {
                             </el-space>
                           </div>
                         </div>
-                        
+
                         <div class="rule-details">
                           <el-row :gutter="16">
                             <el-col :xs="24" :sm="8">
@@ -665,7 +665,7 @@ onMounted(() => {
                               </div>
                             </el-col>
                           </el-row>
-                          
+
                           <div class="rule-actions-list">
                             <span class="actions-label">触发动作:</span>
                             <el-space wrap>
@@ -699,7 +699,7 @@ onMounted(() => {
                   通知设置
                 </span>
               </template>
-              
+
               <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.1 } as any">
                 <div class="settings-section">
                   <!-- 邮件通知 -->
@@ -708,7 +708,7 @@ onMounted(() => {
                       <h3 class="section-title">邮件通知</h3>
                       <el-switch v-model="notificationSettings.email.enabled" />
                     </div>
-                    
+
                     <el-form
                       v-if="notificationSettings.email.enabled"
                       :model="notificationSettings.email"
@@ -742,7 +742,7 @@ onMounted(() => {
                           </el-form-item>
                         </el-col>
                       </el-row>
-                      
+
                       <el-form-item label="收件人列表">
                         <div class="recipients-list">
                           <div
@@ -761,7 +761,7 @@ onMounted(() => {
                           </el-button>
                         </div>
                       </el-form-item>
-                      
+
                       <el-form-item>
                         <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
                           <el-button @click="handleTestConnection('email')" :loading="loading">
@@ -771,14 +771,14 @@ onMounted(() => {
                       </el-form-item>
                     </el-form>
                   </div>
-                  
+
                   <!-- 短信通知 -->
                   <div class="notification-section">
                     <div class="section-header">
                       <h3 class="section-title">短信通知</h3>
                       <el-switch v-model="notificationSettings.sms.enabled" />
                     </div>
-                    
+
                     <el-form
                       v-if="notificationSettings.sms.enabled"
                       :model="notificationSettings.sms"
@@ -804,7 +804,7 @@ onMounted(() => {
                           </el-form-item>
                         </el-col>
                       </el-row>
-                      
+
                       <el-form-item label="手机号列表">
                         <div class="phone-list">
                           <div
@@ -823,7 +823,7 @@ onMounted(() => {
                           </el-button>
                         </div>
                       </el-form-item>
-                      
+
                       <el-form-item>
                         <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
                           <el-button @click="handleTestConnection('sms')" :loading="loading">
@@ -833,14 +833,14 @@ onMounted(() => {
                       </el-form-item>
                     </el-form>
                   </div>
-                  
+
                   <!-- Webhook通知 -->
                   <div class="notification-section">
                     <div class="section-header">
                       <h3 class="section-title">Webhook通知</h3>
                       <el-switch v-model="notificationSettings.webhook.enabled" />
                     </div>
-                    
+
                     <el-form
                       v-if="notificationSettings.webhook.enabled"
                       :model="notificationSettings.webhook"
@@ -859,7 +859,7 @@ onMounted(() => {
                           </el-form-item>
                         </el-col>
                       </el-row>
-                      
+
                       <el-form-item>
                         <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
                           <el-button @click="handleTestConnection('webhook')" :loading="loading">
@@ -881,11 +881,11 @@ onMounted(() => {
                   系统设置
                 </span>
               </template>
-              
+
               <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.1 } as any">
                 <div class="settings-section">
                   <h3 class="section-title">系统配置</h3>
-                  
+
                   <el-form :model="systemSettings" label-width="140px" class="settings-form">
                     <!-- 自动清理 -->
                     <div class="subsection">
@@ -909,7 +909,7 @@ onMounted(() => {
                         </el-col>
                       </el-row>
                     </div>
-                    
+
                     <!-- 备份设置 -->
                     <div class="subsection">
                       <h4 class="subsection-title">备份设置</h4>
@@ -931,7 +931,7 @@ onMounted(() => {
                         </el-col>
                       </el-row>
                     </div>
-                    
+
                     <!-- 性能设置 -->
                     <div class="subsection">
                       <h4 class="subsection-title">性能优化</h4>
@@ -973,14 +973,14 @@ onMounted(() => {
         </el-card>
       </Motion>
     </div>
-    
+
     <!-- 添加规则对话框 -->
     <el-dialog v-model="showAddRuleDialog" title="添加警告规则" width="600px">
       <el-form :model="newRuleForm" label-width="120px">
         <el-form-item label="规则名称" required>
           <el-input v-model="newRuleForm.name" placeholder="请输入规则名称" />
         </el-form-item>
-        
+
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="警告类型">
@@ -1007,7 +1007,7 @@ onMounted(() => {
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-form-item label="触发条件">
           <el-row :gutter="16">
             <el-col :span="8">
@@ -1039,7 +1039,7 @@ onMounted(() => {
             </el-col>
           </el-row>
         </el-form-item>
-        
+
         <el-form-item label="触发动作">
           <el-checkbox-group v-model="newRuleForm.actions">
             <el-checkbox label="email_notification">邮件通知</el-checkbox>
@@ -1048,12 +1048,12 @@ onMounted(() => {
             <el-checkbox label="auto_record">自动录制</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
-        
+
         <el-form-item label="启用规则">
           <el-switch v-model="newRuleForm.enabled" />
         </el-form-item>
       </el-form>
-      
+
       <template #footer>
         <el-space>
           <el-button @click="showAddRuleDialog = false">取消</el-button>
@@ -1068,7 +1068,6 @@ onMounted(() => {
 .settings-page {
   width: 100%;
   min-height: 100vh;
-  background: #f5f7fa;
 }
 
 .settings-container {
@@ -1288,30 +1287,30 @@ onMounted(() => {
   .settings-container {
     padding: 16px;
   }
-  
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .rule-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .rule-actions {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .color-picker-group {
     justify-content: center;
   }

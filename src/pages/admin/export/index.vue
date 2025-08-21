@@ -203,11 +203,11 @@ const showTemplateDialog = ref(false)
 const editingTemplate = ref<ReportTemplate | null>(null)
 
 // 计算属性
-const completedTasks = computed(() => 
+const completedTasks = computed(() =>
   exportTasks.value.filter(task => task.status === 'completed')
 )
 
-const processingTasks = computed(() => 
+const processingTasks = computed(() =>
   exportTasks.value.filter(task => task.status === 'processing')
 )
 
@@ -258,7 +258,7 @@ const handleQuickExport = () => {
   const endDate = new Date()
   const startDate = new Date()
   startDate.setDate(endDate.getDate() - 7)
-  
+
   quickExportForm.date_range = [
     startDate.toISOString().split('T')[0],
     endDate.toISOString().split('T')[0]
@@ -270,17 +270,17 @@ const handleStartExport = async () => {
     ElMessage.warning('请输入导出任务名称')
     return
   }
-  
+
   if (!quickExportForm.date_range[0] || !quickExportForm.date_range[1]) {
     ElMessage.warning('请选择日期范围')
     return
   }
-  
+
   loading.value = true
   try {
     // 模拟创建导出任务
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     const newTask: ExportTask = {
       id: `task_${Date.now()}`,
       name: quickExportForm.name,
@@ -293,13 +293,13 @@ const handleStartExport = async () => {
         date_range: [...quickExportForm.date_range] as [string, string]
       }
     }
-    
+
     exportTasks.value.unshift(newTask)
     showQuickExportDialog.value = false
-    
+
     // 模拟处理进度
     simulateProgress(newTask)
-    
+
     ElMessage.success('导出任务已创建')
   } catch (error) {
     ElMessage.error('创建导出任务失败')
@@ -311,7 +311,7 @@ const handleStartExport = async () => {
 const simulateProgress = (task: ExportTask) => {
   const interval = setInterval(() => {
     task.progress += Math.random() * 20
-    
+
     if (task.progress >= 100) {
       task.progress = 100
       task.status = 'completed'
@@ -340,7 +340,7 @@ const handleDeleteTask = async (task: ExportTask) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
+
     const index = exportTasks.value.findIndex(t => t.id === task.id)
     if (index > -1) {
       exportTasks.value.splice(index, 1)
@@ -357,7 +357,7 @@ const handleRetryTask = async (task: ExportTask) => {
   task.completed_at = undefined
   task.file_size = undefined
   task.download_url = undefined
-  
+
   simulateProgress(task)
   ElMessage.success('任务已重新开始')
 }
@@ -367,7 +367,7 @@ const handleGenerateReport = async (template: ReportTemplate) => {
   try {
     // 模拟生成报告
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
+
     const reportTask: ExportTask = {
       id: `report_${Date.now()}`,
       name: `${template.name}_${new Date().toLocaleDateString()}`,
@@ -380,10 +380,10 @@ const handleGenerateReport = async (template: ReportTemplate) => {
         date_range: ['', ''] // 根据模板类型设置
       }
     }
-    
+
     exportTasks.value.unshift(reportTask)
     simulateProgress(reportTask)
-    
+
     ElMessage.success(`报告"${template.name}"生成中`)
   } catch (error) {
     ElMessage.error('报告生成失败')
@@ -404,13 +404,13 @@ const handleEditTemplate = (template: ReportTemplate) => {
 
 const handleSaveTemplate = () => {
   if (!editingTemplate.value) return
-  
+
   const index = reportTemplates.value.findIndex(t => t.id === editingTemplate.value!.id)
   if (index > -1) {
     reportTemplates.value[index] = { ...editingTemplate.value }
     ElMessage.success('模板保存成功')
   }
-  
+
   showTemplateDialog.value = false
   editingTemplate.value = null
 }
@@ -497,7 +497,7 @@ onMounted(() => {
               </el-card>
             </Motion>
           </el-col>
-          
+
           <el-col :xs="24" :sm="12" :md="6">
             <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.2 } as any">
               <el-card class="stat-card" shadow="hover">
@@ -513,7 +513,7 @@ onMounted(() => {
               </el-card>
             </Motion>
           </el-col>
-          
+
           <el-col :xs="24" :sm="12" :md="6">
             <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.3 } as any">
               <el-card class="stat-card" shadow="hover">
@@ -529,7 +529,7 @@ onMounted(() => {
               </el-card>
             </Motion>
           </el-col>
-          
+
           <el-col :xs="24" :sm="12" :md="6">
             <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.4 } as any">
               <el-card class="stat-card" shadow="hover">
@@ -561,7 +561,7 @@ onMounted(() => {
                   导出任务
                 </span>
               </template>
-              
+
               <div class="tasks-section">
                 <div class="tasks-list">
                   <Motion
@@ -605,12 +605,12 @@ onMounted(() => {
                           </el-space>
                         </div>
                       </div>
-                      
+
                       <div class="task-details">
                         <div class="task-progress" v-if="task.status === 'processing'">
                           <el-progress :percentage="Math.round(task.progress)" :stroke-width="6" />
                         </div>
-                        
+
                         <div class="task-info-grid">
                           <div class="info-item">
                             <span class="info-label">创建时间:</span>
@@ -633,7 +633,7 @@ onMounted(() => {
                     </el-card>
                   </Motion>
                 </div>
-                
+
                 <div v-if="exportTasks.length === 0" class="empty-state">
                   <el-empty description="暂无导出任务">
                     <el-button type="primary" @click="handleQuickExport">
@@ -652,7 +652,7 @@ onMounted(() => {
                   报告模板
                 </span>
               </template>
-              
+
               <div class="templates-section">
                 <div class="templates-grid">
                   <Motion
@@ -676,7 +676,7 @@ onMounted(() => {
                           />
                         </div>
                       </div>
-                      
+
                       <div class="template-details">
                         <div class="template-meta">
                           <el-tag :type="template.type === 'daily' ? 'success' : template.type === 'weekly' ? 'warning' : 'info'" size="small">
@@ -684,7 +684,7 @@ onMounted(() => {
                           </el-tag>
                           <el-tag type="info" size="small">{{ template.format.toUpperCase() }}</el-tag>
                         </div>
-                        
+
                         <div class="template-sections">
                           <div class="sections-label">报告内容:</div>
                           <div class="sections-list">
@@ -698,13 +698,13 @@ onMounted(() => {
                             </el-tag>
                           </div>
                         </div>
-                        
+
                         <div class="template-schedule" v-if="template.schedule">
                           <span class="schedule-label">定时:</span>
                           <span class="schedule-value">{{ template.schedule }}</span>
                         </div>
                       </div>
-                      
+
                       <div class="template-footer">
                         <el-space>
                           <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
@@ -728,14 +728,14 @@ onMounted(() => {
         </el-card>
       </Motion>
     </div>
-    
+
     <!-- 快速导出对话框 -->
     <el-dialog v-model="showQuickExportDialog" title="快速导出" width="600px" @close="resetQuickExportForm">
       <el-form :model="quickExportForm" label-width="100px">
         <el-form-item label="任务名称" required>
           <el-input v-model="quickExportForm.name" placeholder="请输入导出任务名称" />
         </el-form-item>
-        
+
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="数据类型">
@@ -767,7 +767,7 @@ onMounted(() => {
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-form-item label="日期范围" required>
           <el-date-picker
             v-model="quickExportForm.date_range"
@@ -780,7 +780,7 @@ onMounted(() => {
           />
         </el-form-item>
       </el-form>
-      
+
       <template #footer>
         <el-space>
           <el-button @click="showQuickExportDialog = false">取消</el-button>
@@ -790,18 +790,18 @@ onMounted(() => {
         </el-space>
       </template>
     </el-dialog>
-    
+
     <!-- 模板编辑对话框 -->
     <el-dialog v-model="showTemplateDialog" title="编辑报告模板" width="600px">
       <el-form :model="editingTemplate" label-width="100px" v-if="editingTemplate">
         <el-form-item label="模板名称">
           <el-input v-model="editingTemplate.name" />
         </el-form-item>
-        
+
         <el-form-item label="描述">
           <el-input v-model="editingTemplate.description" type="textarea" :rows="2" />
         </el-form-item>
-        
+
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="类型">
@@ -822,16 +822,16 @@ onMounted(() => {
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-form-item label="定时计划">
           <el-input v-model="editingTemplate.schedule" placeholder="Cron表达式 (可选)" />
         </el-form-item>
-        
+
         <el-form-item label="启用">
           <el-switch v-model="editingTemplate.enabled" />
         </el-form-item>
       </el-form>
-      
+
       <template #footer>
         <el-space>
           <el-button @click="showTemplateDialog = false">取消</el-button>
@@ -848,7 +848,6 @@ onMounted(() => {
 .export-page {
   width: 100%;
   min-height: 100vh;
-  background: #f5f7fa;
 }
 
 .export-container {
@@ -1174,32 +1173,32 @@ onMounted(() => {
   .export-container {
     padding: 16px;
   }
-  
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .task-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .task-actions {
     width: 100%;
   }
-  
+
   .template-header {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .templates-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .task-info-grid {
     grid-template-columns: 1fr;
   }
