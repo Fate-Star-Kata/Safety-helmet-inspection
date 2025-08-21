@@ -59,21 +59,16 @@ export const adminMenuItems: AdminHeader[] = [
     path: '/admin/dashboard',
   },
   {
-    id: '2',
-    title: '警告管理',
-    icon: 'Warning',
-    path: '/admin/warnings',
-  },
-  {
     id: '3',
     title: '用户管理',
     icon: 'User',
     path: '/admin/userManage',
-    hide: true,
-    children: [
-      { id: '3-1', title: '用户列表', icon: 'UserFilled', path: '/admin/userManage/list' },
-      { id: '3-2', title: '角色管理', icon: 'Avatar', path: '/admin/userManage/roles' }
-    ]
+  },
+  {
+    id: '2',
+    title: '警告管理',
+    icon: 'Warning',
+    path: '/admin/warnings',
   },
   {
     id: '4',

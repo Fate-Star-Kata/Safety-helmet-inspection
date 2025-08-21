@@ -74,7 +74,7 @@ const cardVariants = {
 // 响应式数据
 const loading = ref(false)
 const autoRefresh = ref(true)
-const refreshInterval = ref<NodeJS.Timeout | null>(null)
+const refreshInterval = ref<number | null>(null)
 
 // 系统统计数据
 const systemStats = ref<SystemStats>({
@@ -514,7 +514,6 @@ onMounted(() => {
 .dashboard-page {
   width: 100%;
   min-height: 100vh;
-  background: #f5f7fa;
 }
 
 .dashboard-container {
@@ -680,6 +679,13 @@ onMounted(() => {
 .camera-status-list {
   max-height: 320px;
   overflow-y: auto;
+  /* 隐藏滚动条 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.camera-status-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 .camera-item {
@@ -724,6 +730,13 @@ onMounted(() => {
 .activity-list {
   max-height: 320px;
   overflow-y: auto;
+  /* 隐藏滚动条 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.activity-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 .activity-item {
