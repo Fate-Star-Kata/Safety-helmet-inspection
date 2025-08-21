@@ -195,14 +195,7 @@
             
             <!-- 警告图标 -->
             <div class="flex-shrink-0 mt-1">
-              <span 
-                class="text-2xl"
-                :class="{
-                  '🚨': record.level === '严重警告',
-                  '⚠️': record.level === '一般警告',
-                  'ℹ️': record.level === '提示信息'
-                }"
-              >
+              <span class="text-2xl" :class="getLevelColorClass(record.level)">
                 {{ getWarningIcon(record.level) }}
               </span>
             </div>
@@ -261,7 +254,7 @@
       <div class="p-6 border-t border-gray-200">
         <div class="flex items-center justify-between">
           <div class="text-sm text-gray-700">
-            显示第 {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalRecords) }} 条，共 {{ totalRecords }} 条记录
+            显示第 {{ startIndex }} - {{ endIndex }} 条，共 {{ totalRecords }} 条记录
           </div>
           <div class="flex space-x-2">
             <button 
@@ -322,8 +315,8 @@ interface Stats {
 
 // 响应式数据
 const filters = ref<Filters>({
-  startDate: '2025-08-14',
-  endDate: '2025-08-21',
+  startDate: '',
+  endDate: '',
   level: '',
   camera: ''
 })
@@ -346,7 +339,11 @@ const cameraOptions = ref(['摄像头#1', '摄像头#2', '摄像头#3', '摄像�
 
 // 计算属性
 const totalRecords = computed(() => filteredRecords.value.length)
-const totalPages = computed(() => Math.ceil(totalRecords.value / pageSize.value))
+const totalPages = computed(() => Math.max(1, Math.ceil(totalRecords.value / pageSize.value) || 1))
+
+// 新增：用于展示的起止序号（0 条时显示 0-0）
+const startIndex = computed(() => totalRecords.value === 0 ? 0 : (currentPage.value - 1) * pageSize.value + 1)
+const endIndex = computed(() => Math.min(currentPage.value * pageSize.value, totalRecords.value))
 
 const paginatedRecords = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
@@ -408,6 +405,13 @@ const getWarningIcon = (level: string): string => {
   }
 }
 
+// 新增：根据等级返回颜色类
+const getLevelColorClass = (level: string): string => {
+  if (level === '严重警告') return 'text-red-600'
+  if (level === '一般警告') return 'text-yellow-600'
+  return 'text-blue-600'
+}
+
 const formatDateTime = (datetime: string): string => {
   const date = new Date(datetime)
   return date.toLocaleString('zh-CN', {
@@ -421,18 +425,23 @@ const formatDateTime = (datetime: string): string => {
 }
 
 const applyFilters = (): void => {
+  const startTime = filters.value.startDate
+    ? new Date(`${filters.value.startDate}T00:00:00`).getTime()
+    : -Infinity
+  const endTime = filters.value.endDate
+    ? new Date(`${filters.value.endDate}T23:59:59`).getTime()
+    : Infinity
+
   filteredRecords.value = allRecords.value.filter(record => {
+    const t = new Date(record.datetime).getTime()
     const matchLevel = !filters.value.level || record.level === filters.value.level
     const matchCamera = !filters.value.camera || record.camera === filters.value.camera
-    
-    const recordDate = new Date(record.datetime).toISOString().split('T')[0]
-    const matchStartDate = !filters.value.startDate || recordDate >= filters.value.startDate
-    const matchEndDate = !filters.value.endDate || recordDate <= filters.value.endDate
-    
-    return matchLevel && matchCamera && matchStartDate && matchEndDate
+    const matchDate = t >= startTime && t <= endTime
+    return matchLevel && matchCamera && matchDate
   })
-  
+
   currentPage.value = 1
+  selectedRecords.value = [] // 重置勾选，防止页变了勾选还在
 }
 
 const previousPage = (): void => {
