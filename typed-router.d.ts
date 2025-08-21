@@ -20,12 +20,12 @@ declare module 'vue-router/auto-routes' {
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
     '/admin/': RouteRecordInfo<'/admin/', '/admin', Record<never, never>, Record<never, never>>,
-    '/admin/ai/': RouteRecordInfo<'/admin/ai/', '/admin/ai', Record<never, never>, Record<never, never>>,
     '/admin/Content/': RouteRecordInfo<'/admin/Content/', '/admin/Content', Record<never, never>, Record<never, never>>,
     '/admin/dashboard/': RouteRecordInfo<'/admin/dashboard/', '/admin/dashboard', Record<never, never>, Record<never, never>>,
-    '/admin/files/': RouteRecordInfo<'/admin/files/', '/admin/files', Record<never, never>, Record<never, never>>,
-    '/admin/systemConfig/': RouteRecordInfo<'/admin/systemConfig/', '/admin/systemConfig', Record<never, never>, Record<never, never>>,
+    '/admin/export/': RouteRecordInfo<'/admin/export/', '/admin/export', Record<never, never>, Record<never, never>>,
+    '/admin/settings/': RouteRecordInfo<'/admin/settings/', '/admin/settings', Record<never, never>, Record<never, never>>,
     '/admin/userManage/': RouteRecordInfo<'/admin/userManage/', '/admin/userManage', Record<never, never>, Record<never, never>>,
+    '/admin/warnings/': RouteRecordInfo<'/admin/warnings/', '/admin/warnings', Record<never, never>, Record<never, never>>,
     '/auth/login/': RouteRecordInfo<'/auth/login/', '/auth/login', Record<never, never>, Record<never, never>>,
     '/auth/Register/': RouteRecordInfo<'/auth/Register/', '/auth/Register', Record<never, never>, Record<never, never>>,
     '/detection/': RouteRecordInfo<'/detection/', '/detection', Record<never, never>, Record<never, never>>,
@@ -58,10 +58,6 @@ declare module 'vue-router/auto-routes' {
       routes: '/admin/'
       views: never
     }
-    'src/pages/admin/ai/index.vue': {
-      routes: '/admin/ai/'
-      views: never
-    }
     'src/pages/admin/Content/index.vue': {
       routes: '/admin/Content/'
       views: never
@@ -70,16 +66,20 @@ declare module 'vue-router/auto-routes' {
       routes: '/admin/dashboard/'
       views: never
     }
-    'src/pages/admin/files/index.vue': {
-      routes: '/admin/files/'
+    'src/pages/admin/export/index.vue': {
+      routes: '/admin/export/'
       views: never
     }
-    'src/pages/admin/systemConfig/index.vue': {
-      routes: '/admin/systemConfig/'
+    'src/pages/admin/settings/index.vue': {
+      routes: '/admin/settings/'
       views: never
     }
     'src/pages/admin/userManage/index.vue': {
       routes: '/admin/userManage/'
+      views: never
+    }
+    'src/pages/admin/warnings/index.vue': {
+      routes: '/admin/warnings/'
       views: never
     }
     'src/pages/auth/login/index.vue': {
