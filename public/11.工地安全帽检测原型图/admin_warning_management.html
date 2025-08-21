@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>警告管理 - 工地安全帽检测系统</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-hard-hat"></i>
+                <span>工地安全帽检测系统 - 管理端</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="admin_index.html" class="nav-link">
+                        <i class="fas fa-home"></i> 首页
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_user_management.html" class="nav-link">
+                        <i class="fas fa-users"></i> 用户管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_warning_management.html" class="nav-link active">
+                        <i class="fas fa-exclamation-triangle"></i> 警告管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="user_index.html" class="nav-link">
+                        <i class="fas fa-eye"></i> 用户端
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> 退出
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="main-content">
+        <div class="container">
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1><i class="fas fa-exclamation-triangle"></i> 警告管理</h1>
+                <p>管理和处理所有安全帽检测警告记录</p>
+            </div>
+
+            <!-- 统计概览 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalWarnings">1,234</h3>
+                        <p>总警告数</p>
+                        <small class="stat-change negative">+23 今日新增</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="pendingWarnings">45</h3>
+                        <p>待处理警告</p>
+                        <small class="stat-change negative">需要关注</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="resolvedWarnings">1,189</h3>
+                        <p>已处理警告</p>
+                        <small class="stat-change positive">处理率 96.4%</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon info">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="avgResponseTime">2.3</h3>
+                        <p>平均响应时间(分钟)</p>
+                        <small class="stat-change positive">较上周-0.5分钟</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 筛选和操作区域 -->
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="dateRange">时间范围:</label>
+                        <select id="dateRange" onchange="filterWarnings()">
+                            <option value="today">今天</option>
+                            <option value="week">本周</option>
+                            <option value="month" selected>本月</option>
+                            <option value="quarter">本季度</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="warningLevel">警告级别:</label>
+                        <select id="warningLevel" onchange="filterWarnings()">
+                            <option value="all">全部</option>
+                            <option value="critical">严重</option>
+                            <option value="warning">一般</option>
+                            <option value="info">提示</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="warningStatus">处理状态:</label>
+                        <select id="warningStatus" onchange="filterWarnings()">
+                            <option value="all">全部</option>
+                            <option value="pending">待处理</option>
+                            <option value="processing">处理中</option>
+                            <option value="resolved">已处理</option>
+                            <option value="ignored">已忽略</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="cameraFilter">摄像头:</label>
+                        <select id="cameraFilter" onchange="filterWarnings()">
+                            <option value="all">全部摄像头</option>
+                            <option value="camera-001">摄像头-001</option>
+                            <option value="camera-002">摄像头-002</option>
+                            <option value="camera-003">摄像头-003</option>
+                            <option value="camera-004">摄像头-004</option>
+                            <option value="camera-005">摄像头-005</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <input type="text" id="searchInput" placeholder="搜索警告内容..." onkeyup="searchWarnings()">
+                        <button class="btn btn-primary" onclick="searchWarnings()">
+                            <i class="fas fa-search"></i> 搜索
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 批量操作 -->
+                <div class="batch-actions">
+                    <button class="btn btn-outline" onclick="selectAll()">
+                        <i class="fas fa-check-square"></i> 全选
+                    </button>
+                    <button class="btn btn-success" onclick="batchResolve()">
+                        <i class="fas fa-check"></i> 批量标记已处理
+                    </button>
+                    <button class="btn btn-warning" onclick="batchAssign()">
+                        <i class="fas fa-user-tag"></i> 批量分配
+                    </button>
+                    <button class="btn btn-info" onclick="exportSelected()">
+                        <i class="fas fa-download"></i> 导出选中
+                    </button>
+                    <button class="btn btn-danger" onclick="batchDelete()">
+                        <i class="fas fa-trash"></i> 批量删除
+                    </button>
+                </div>
+            </div>
+
+            <!-- 警告列表 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> 警告记录列表</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-outline" onclick="refreshWarnings()">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                        <button class="btn btn-primary" onclick="exportAllWarnings()">
+                            <i class="fas fa-file-export"></i> 导出全部
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table" id="warningsTable">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
+                                <th onclick="sortTable('id')">ID <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('time')">时间 <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('camera')">摄像头 <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('level')">级别 <i class="fas fa-sort"></i></th>
+                                <th>警告内容</th>
+                                <th onclick="sortTable('status')">状态 <i class="fas fa-sort"></i></th>
+                                <th>处理人员</th>
+                                <th onclick="sortTable('response_time')">响应时间 <i class="fas fa-sort"></i></th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="warningsTableBody">
+                            <!-- 警告记录将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页 -->
+                <div class="pagination">
+                    <button class="btn btn-outline" onclick="previousPage()" id="prevBtn">
+                        <i class="fas fa-chevron-left"></i> 上一页
+                    </button>
+                    <div class="page-info">
+                        <span>第 <span id="currentPage">1</span> 页，共 <span id="totalPages">10</span> 页</span>
+                        <select id="pageSize" onchange="changePageSize()">
+                            <option value="10">10条/页</option>
+                            <option value="20" selected>20条/页</option>
+                            <option value="50">50条/页</option>
+                            <option value="100">100条/页</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-outline" onclick="nextPage()" id="nextBtn">
+                        下一页 <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 警告详情模态框 -->
+    <div id="warningDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> 警告详情</h3>
+                <span class="close" onclick="closeWarningDetail()">&times;</span>
+            </div>
+            <div class="modal-body" id="warningDetailContent">
+                <!-- 详情内容将通过JavaScript动态加载 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeWarningDetail()">关闭</button>
+                <button class="btn btn-success" onclick="resolveWarning()">标记已处理</button>
+                <button class="btn btn-warning" onclick="assignWarning()">分配处理</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分配处理模态框 -->
+    <div id="assignModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-tag"></i> 分配处理人员</h3>
+                <span class="close" onclick="closeAssignModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="assignUser">选择处理人员:</label>
+                    <select id="assignUser">
+                        <option value="">请选择...</option>
+                        <option value="admin1">张三 - 安全主管</option>
+                        <option value="admin2">李四 - 现场监督</option>
+                        <option value="admin3">王五 - 安全员</option>
+                        <option value="admin4">赵六 - 项目经理</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="assignNote">备注说明:</label>
+                    <textarea id="assignNote" rows="3" placeholder="请输入分配说明..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="assignPriority">优先级:</label>
+                    <select id="assignPriority">
+                        <option value="high">高</option>
+                        <option value="medium" selected>中</option>
+                        <option value="low">低</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeAssignModal()">取消</button>
+                <button class="btn btn-primary" onclick="confirmAssign()">确认分配</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 全局变量
+        let currentWarnings = [];
+        let filteredWarnings = [];
+        let currentPage = 1;
+        let pageSize = 20;
+        let selectedWarnings = [];
+        let currentWarningId = null;
+
+        /**
+         * 初始化页面数据
+         */
+        function initializeData() {
+            // 模拟警告数据
+            currentWarnings = [
+                {
+                    id: 'W001',
+                    time: '2024-01-15 14:30:25',
+                    camera: '摄像头-001',
+                    level: 'critical',
+                    content: '检测到未戴安全帽人员，位置：施工区域A',
+                    status: 'pending',
+                    assignee: '',
+                    responseTime: '',
+                    image: 'warning1.jpg',
+                    location: '施工区域A',
+                    confidence: '95%'
+                },
+                {
+                    id: 'W002',
+                    time: '2024-01-15 14:25:12',
+                    camera: '摄像头-002',
+                    level: 'warning',
+                    content: '检测到安全帽佩戴不规范',
+                    status: 'processing',
+                    assignee: '张三',
+                    responseTime: '2分钟',
+                    image: 'warning2.jpg',
+                    location: '施工区域B',
+                    confidence: '87%'
+                },
+                {
+                    id: 'W003',
+                    time: '2024-01-15 14:20:08',
+                    camera: '摄像头-003',
+                    level: 'critical',
+                    content: '多人未戴安全帽，紧急处理',
+                    status: 'resolved',
+                    assignee: '李四',
+                    responseTime: '1分钟',
+                    image: 'warning3.jpg',
+                    location: '施工区域C',
+                    confidence: '92%'
+                }
+            ];
+            
+            // 生成更多模拟数据
+            for (let i = 4; i <= 200; i++) {
+                const levels = ['critical', 'warning', 'info'];
+                const statuses = ['pending', 'processing', 'resolved', 'ignored'];
+                const cameras = ['摄像头-001', '摄像头-002', '摄像头-003', '摄像头-004', '摄像头-005'];
+                const assignees = ['', '张三', '李四', '王五', '赵六'];
+                
+                const warning = {
+                    id: `W${i.toString().padStart(3, '0')}`,
+                    time: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleString('zh-CN'),
+                    camera: cameras[Math.floor(Math.random() * cameras.length)],
+                    level: levels[Math.floor(Math.random() * levels.length)],
+                    content: `检测到安全帽相关问题 #${i}`,
+                    status: statuses[Math.floor(Math.random() * statuses.length)],
+                    assignee: assignees[Math.floor(Math.random() * assignees.length)],
+                    responseTime: Math.random() > 0.5 ? `${Math.floor(Math.random() * 10) + 1}分钟` : '',
+                    image: `warning${i}.jpg`,
+                    location: `施工区域${String.fromCharCode(65 + Math.floor(Math.random() * 5))}`,
+                    confidence: `${Math.floor(Math.random() * 20) + 80}%`
+                };
+                currentWarnings.push(warning);
+            }
+            
+            filteredWarnings = [...currentWarnings];
+            renderWarningsTable();
+            updatePagination();
+        }
+
+        /**
+         * 渲染警告表格
+         */
+        function renderWarningsTable() {
+            const tbody = document.getElementById('warningsTableBody');
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const pageWarnings = filteredWarnings.slice(startIndex, endIndex);
+            
+            tbody.innerHTML = '';
+            
+            pageWarnings.forEach(warning => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="checkbox" value="${warning.id}" onchange="toggleWarningSelection('${warning.id}')"></td>
+                    <td>${warning.id}</td>
+                    <td>${warning.time}</td>
+                    <td>${warning.camera}</td>
+                    <td><span class="badge badge-${warning.level}">${getLevelText(warning.level)}</span></td>
+                    <td class="warning-content">${warning.content}</td>
+                    <td><span class="badge badge-${getStatusColor(warning.status)}">${getStatusText(warning.status)}</span></td>
+                    <td>${warning.assignee || '未分配'}</td>
+                    <td>${warning.responseTime || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" onclick="viewWarningDetail('${warning.id}')" title="查看详情">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="quickResolve('${warning.id}')" title="快速处理">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="quickAssign('${warning.id}')" title="分配处理">
+                            <i class="fas fa-user-tag"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteWarning('${warning.id}')" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        /**
+         * 获取级别文本
+         */
+        function getLevelText(level) {
+            const levelMap = {
+                'critical': '严重',
+                'warning': '一般',
+                'info': '提示'
+            };
+            return levelMap[level] || level;
+        }
+
+        /**
+         * 获取状态文本
+         */
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待处理',
+                'processing': '处理中',
+                'resolved': '已处理',
+                'ignored': '已忽略'
+            };
+            return statusMap[status] || status;
+        }
+
+        /**
+         * 获取状态颜色
+         */
+        function getStatusColor(status) {
+            const colorMap = {
+                'pending': 'warning',
+                'processing': 'info',
+                'resolved': 'success',
+                'ignored': 'secondary'
+            };
+            return colorMap[status] || 'secondary';
+        }
+
+        /**
+         * 筛选警告
+         */
+        function filterWarnings() {
+            const dateRange = document.getElementById('dateRange').value;
+            const warningLevel = document.getElementById('warningLevel').value;
+            const warningStatus = document.getElementById('warningStatus').value;
+            const cameraFilter = document.getElementById('cameraFilter').value;
+            
+            filteredWarnings = currentWarnings.filter(warning => {
+                // 级别筛选
+                if (warningLevel !== 'all' && warning.level !== warningLevel) {
+                    return false;
+                }
+                
+                // 状态筛选
+                if (warningStatus !== 'all' && warning.status !== warningStatus) {
+                    return false;
+                }
+                
+                // 摄像头筛选
+                if (cameraFilter !== 'all' && warning.camera !== cameraFilter) {
+                    return false;
+                }
+                
+                // 时间筛选（简化实现）
+                if (dateRange !== 'month') {
+                    // 这里可以添加具体的时间筛选逻辑
+                }
+                
+                return true;
+            });
+            
+            currentPage = 1;
+            renderWarningsTable();
+            updatePagination();
+        }
+
+        /**
+         * 搜索警告
+         */
+        function searchWarnings() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm.trim() === '') {
+                filteredWarnings = [...currentWarnings];
+            } else {
+                filteredWarnings = currentWarnings.filter(warning => 
+                    warning.content.toLowerCase().includes(searchTerm) ||
+                    warning.id.toLowerCase().includes(searchTerm) ||
+                    warning.camera.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            currentPage = 1;
+            renderWarningsTable();
+            updatePagination();
+        }
+
+        /**
+         * 查看警告详情
+         */
+        function viewWarningDetail(warningId) {
+            const warning = currentWarnings.find(w => w.id === warningId);
+            if (!warning) return;
+            
+            currentWarningId = warningId;
+            
+            const detailContent = document.getElementById('warningDetailContent');
+            detailContent.innerHTML = `
+                <div class="warning-detail">
+                    <div class="detail-row">
+                        <label>警告ID:</label>
+                        <span>${warning.id}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>发生时间:</label>
+                        <span>${warning.time}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>摄像头:</label>
+                        <span>${warning.camera}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>警告级别:</label>
+                        <span class="badge badge-${warning.level}">${getLevelText(warning.level)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>处理状态:</label>
+                        <span class="badge badge-${getStatusColor(warning.status)}">${getStatusText(warning.status)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>警告内容:</label>
+                        <span>${warning.content}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>检测位置:</label>
+                        <span>${warning.location}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>置信度:</label>
+                        <span>${warning.confidence}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>处理人员:</label>
+                        <span>${warning.assignee || '未分配'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>响应时间:</label>
+                        <span>${warning.responseTime || '未响应'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <label>截图:</label>
+                        <div class="warning-image">
+                            <img src="https://via.placeholder.com/400x300?text=警告截图" alt="警告截图" style="max-width: 100%; border-radius: 5px;">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('warningDetailModal').style.display = 'block';
+        }
+
+        /**
+         * 关闭警告详情
+         */
+        function closeWarningDetail() {
+            document.getElementById('warningDetailModal').style.display = 'none';
+            currentWarningId = null;
+        }
+
+        /**
+         * 快速处理警告
+         */
+        function quickResolve(warningId) {
+            if (confirm('确定要将此警告标记为已处理吗？')) {
+                const warning = currentWarnings.find(w => w.id === warningId);
+                if (warning) {
+                    warning.status = 'resolved';
+                    warning.responseTime = '刚刚';
+                    renderWarningsTable();
+                    showNotification('警告已标记为已处理', 'success');
+                }
+            }
+        }
+
+        /**
+         * 快速分配
+         */
+        function quickAssign(warningId) {
+            currentWarningId = warningId;
+            document.getElementById('assignModal').style.display = 'block';
+        }
+
+        /**
+         * 删除警告
+         */
+        function deleteWarning(warningId) {
+            if (confirm('确定要删除此警告记录吗？此操作不可恢复。')) {
+                const index = currentWarnings.findIndex(w => w.id === warningId);
+                if (index > -1) {
+                    currentWarnings.splice(index, 1);
+                    filterWarnings();
+                    showNotification('警告记录已删除', 'success');
+                }
+            }
+        }
+
+        /**
+         * 切换警告选择
+         */
+        function toggleWarningSelection(warningId) {
+            const index = selectedWarnings.indexOf(warningId);
+            if (index > -1) {
+                selectedWarnings.splice(index, 1);
+            } else {
+                selectedWarnings.push(warningId);
+            }
+        }
+
+        /**
+         * 全选/取消全选
+         */
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const checkboxes = document.querySelectorAll('#warningsTableBody input[type="checkbox"]');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+                const warningId = checkbox.value;
+                if (selectAllCheckbox.checked) {
+                    if (!selectedWarnings.includes(warningId)) {
+                        selectedWarnings.push(warningId);
+                    }
+                } else {
+                    const index = selectedWarnings.indexOf(warningId);
+                    if (index > -1) {
+                        selectedWarnings.splice(index, 1);
+                    }
+                }
+            });
+        }
+
+        /**
+         * 批量处理
+         */
+        function batchResolve() {
+            if (selectedWarnings.length === 0) {
+                alert('请先选择要处理的警告记录');
+                return;
+            }
+            
+            if (confirm(`确定要将选中的 ${selectedWarnings.length} 条警告标记为已处理吗？`)) {
+                selectedWarnings.forEach(warningId => {
+                    const warning = currentWarnings.find(w => w.id === warningId);
+                    if (warning) {
+                        warning.status = 'resolved';
+                        warning.responseTime = '刚刚';
+                    }
+                });
+                
+                selectedWarnings = [];
+                document.getElementById('selectAllCheckbox').checked = false;
+                renderWarningsTable();
+                showNotification('批量处理完成', 'success');
+            }
+        }
+
+        /**
+         * 批量分配
+         */
+        function batchAssign() {
+            if (selectedWarnings.length === 0) {
+                alert('请先选择要分配的警告记录');
+                return;
+            }
+            
+            document.getElementById('assignModal').style.display = 'block';
+        }
+
+        /**
+         * 批量删除
+         */
+        function batchDelete() {
+            if (selectedWarnings.length === 0) {
+                alert('请先选择要删除的警告记录');
+                return;
+            }
+            
+            if (confirm(`确定要删除选中的 ${selectedWarnings.length} 条警告记录吗？此操作不可恢复。`)) {
+                selectedWarnings.forEach(warningId => {
+                    const index = currentWarnings.findIndex(w => w.id === warningId);
+                    if (index > -1) {
+                        currentWarnings.splice(index, 1);
+                    }
+                });
+                
+                selectedWarnings = [];
+                document.getElementById('selectAllCheckbox').checked = false;
+                filterWarnings();
+                showNotification('批量删除完成', 'success');
+            }
+        }
+
+        /**
+         * 导出选中记录
+         */
+        function exportSelected() {
+            if (selectedWarnings.length === 0) {
+                alert('请先选择要导出的警告记录');
+                return;
+            }
+            
+            showNotification(`正在导出 ${selectedWarnings.length} 条记录...`, 'info');
+            // 这里可以添加实际的导出逻辑
+        }
+
+        /**
+         * 导出全部警告
+         */
+        function exportAllWarnings() {
+            showNotification('正在导出全部警告记录...', 'info');
+            // 这里可以添加实际的导出逻辑
+        }
+
+        /**
+         * 关闭分配模态框
+         */
+        function closeAssignModal() {
+            document.getElementById('assignModal').style.display = 'none';
+            currentWarningId = null;
+        }
+
+        /**
+         * 确认分配
+         */
+        function confirmAssign() {
+            const assignUser = document.getElementById('assignUser').value;
+            const assignNote = document.getElementById('assignNote').value;
+            const assignPriority = document.getElementById('assignPriority').value;
+            
+            if (!assignUser) {
+                alert('请选择处理人员');
+                return;
+            }
+            
+            if (currentWarningId) {
+                // 单个分配
+                const warning = currentWarnings.find(w => w.id === currentWarningId);
+                if (warning) {
+                    warning.assignee = document.getElementById('assignUser').selectedOptions[0].text.split(' - ')[0];
+                    warning.status = 'processing';
+                }
+            } else if (selectedWarnings.length > 0) {
+                // 批量分配
+                selectedWarnings.forEach(warningId => {
+                    const warning = currentWarnings.find(w => w.id === warningId);
+                    if (warning) {
+                        warning.assignee = document.getElementById('assignUser').selectedOptions[0].text.split(' - ')[0];
+                        warning.status = 'processing';
+                    }
+                });
+                selectedWarnings = [];
+                document.getElementById('selectAllCheckbox').checked = false;
+            }
+            
+            closeAssignModal();
+            renderWarningsTable();
+            showNotification('分配成功', 'success');
+        }
+
+        /**
+         * 刷新警告列表
+         */
+        function refreshWarnings() {
+            showNotification('正在刷新数据...', 'info');
+            // 模拟刷新延迟
+            setTimeout(() => {
+                renderWarningsTable();
+                showNotification('数据已刷新', 'success');
+            }, 1000);
+        }
+
+        /**
+         * 更新分页信息
+         */
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredWarnings.length / pageSize);
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+            
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        /**
+         * 上一页
+         */
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderWarningsTable();
+                updatePagination();
+            }
+        }
+
+        /**
+         * 下一页
+         */
+        function nextPage() {
+            const totalPages = Math.ceil(filteredWarnings.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderWarningsTable();
+                updatePagination();
+            }
+        }
+
+        /**
+         * 改变页面大小
+         */
+        function changePageSize() {
+            pageSize = parseInt(document.getElementById('pageSize').value);
+            currentPage = 1;
+            renderWarningsTable();
+            updatePagination();
+        }
+
+        /**
+         * 表格排序
+         */
+        function sortTable(column) {
+            // 简化的排序实现
+            filteredWarnings.sort((a, b) => {
+                if (a[column] < b[column]) return -1;
+                if (a[column] > b[column]) return 1;
+                return 0;
+            });
+            renderWarningsTable();
+        }
+
+        /**
+         * 显示通知
+         */
+        function showNotification(message, type = 'info') {
+            // 简化的通知实现
+            alert(message);
+        }
+
+        /**
+         * 退出登录
+         */
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                alert('已退出登录');
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+            
+            // 点击模态框外部关闭
+            window.onclick = function(event) {
+                const warningModal = document.getElementById('warningDetailModal');
+                const assignModal = document.getElementById('assignModal');
+                
+                if (event.target === warningModal) {
+                    closeWarningDetail();
+                }
+                if (event.target === assignModal) {
+                    closeAssignModal();
+                }
+            };
+        });
+    </script>
+
+    <style>
+        /* 警告管理页面特有样式 */
+        .filter-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+        }
+
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .batch-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .data-table th:hover {
+            background: #e9ecef;
+        }
+
+        .data-table th i {
+            margin-left: 5px;
+            opacity: 0.5;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .warning-content {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-critical {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .badge-warning {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .badge-info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .badge-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .badge-secondary {
+            background: #f5f5f5;
+            color: #757575;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+            margin: 0 2px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .page-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-info select {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close {
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .warning-detail .detail-row {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        .warning-detail .detail-row label {
+            width: 100px;
+            font-weight: 600;
+            color: #333;
+            flex-shrink: 0;
+        }
+
+        .warning-detail .detail-row span {
+            flex: 1;
+        }
+
+        .warning-image {
+            margin-top: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .stat-icon.danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+
+        .stat-icon.warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+
+        .stat-icon.success {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+        }
+
+        .stat-icon.info {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+        }
+
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                min-width: auto;
+            }
+            
+            .batch-actions {
+                justify-content: center;
+            }
+            
+            .pagination {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+            
+            .warning-detail .detail-row {
+                flex-direction: column;
+            }
+            
+            .warning-detail .detail-row label {
+                width: auto;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</body>
+</html>

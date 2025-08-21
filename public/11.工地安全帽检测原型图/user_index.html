@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工地安全帽检测系统 - 用户端</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">🏗️ 安全帽检测系统</a>
+            <ul class="nav-menu">
+                <li><a href="user_index.html" class="active">首页</a></li>
+                <li><a href="user_monitoring.html">实时监控</a></li>
+                <li><a href="user_warning_history.html">警告记录</a></li>
+                <li><a href="user_statistics.html">统计信息</a></li>
+                <li><a href="#" onclick="logout()">退出登录</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="container">
+        <!-- 欢迎信息 -->
+        <div class="card">
+            <h1>欢迎使用工地安全帽检测系统</h1>
+            <p>基于YOLOv11深度学习算法的智能安全帽检测系统，实时保障工地安全。</p>
+        </div>
+
+        <!-- 系统状态概览 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" style="color: #4CAF50;">5</div>
+                <div class="stat-label">在线摄像头</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #2196F3;">127</div>
+                <div class="stat-label">今日检测人次</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #FF9800;">3</div>
+                <div class="stat-label">今日警告次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #9C27B0;">98.5%</div>
+                <div class="stat-label">检测准确率</div>
+            </div>
+        </div>
+
+        <!-- 快速操作 -->
+        <div class="card">
+            <h2>快速操作</h2>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                <a href="user_monitoring.html" class="btn btn-primary">📹 进入实时监控</a>
+                <a href="user_warning_history.html" class="btn btn-warning">⚠️ 查看警告记录</a>
+                <a href="user_statistics.html" class="btn btn-success">📊 统计分析</a>
+            </div>
+        </div>
+
+        <!-- 最新警告 -->
+        <div class="card">
+            <h2>最新警告信息</h2>
+            <div class="alert alert-warning">
+                <strong>⚠️ 警告：</strong> 摄像头#3检测到未佩戴安全帽人员 - 2024年1月15日 14:30
+            </div>
+            <div class="alert alert-danger">
+                <strong>🚨 严重警告：</strong> 摄像头#1检测到危险区域有人员未佩戴安全帽 - 2024年1月15日 13:45
+            </div>
+            <a href="user_warning_history.html" class="btn btn-primary">查看全部警告</a>
+        </div>
+
+        <!-- 系统信息 -->
+        <div class="card">
+            <h2>系统信息</h2>
+            <table class="table">
+                <tr>
+                    <td><strong>检测算法</strong></td>
+                    <td>YOLOv11</td>
+                </tr>
+                <tr>
+                    <td><strong>系统版本</strong></td>
+                    <td>v2.1.0</td>
+                </tr>
+                <tr>
+                    <td><strong>最后更新</strong></td>
+                    <td>2024年1月10日</td>
+                </tr>
+                <tr>
+                    <td><strong>运行状态</strong></td>
+                    <td><span style="color: #4CAF50;">● 正常运行</span></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 用户登出功能
+         */
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                alert('已退出登录');
+                // 这里可以添加实际的登出逻辑
+            }
+        }
+
+        /**
+         * 页面加载完成后的初始化
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟实时数据更新
+            setInterval(updateStats, 30000); // 每30秒更新一次统计数据
+        });
+
+        /**
+         * 更新统计数据
+         */
+        function updateStats() {
+            // 模拟数据更新
+            const detectionCount = document.querySelector('.stat-number');
+            if (detectionCount) {
+                const currentCount = parseInt(detectionCount.textContent);
+                detectionCount.textContent = currentCount + Math.floor(Math.random() * 3);
+            }
+        }
+    </script>
+</body>
+</html>

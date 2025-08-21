@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理端首页 - 工地安全帽检测系统</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-hard-hat"></i>
+                <span>工地安全帽检测系统 - 管理端</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="admin_index.html" class="nav-link active">
+                        <i class="fas fa-home"></i> 首页
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_user_management.html" class="nav-link">
+                        <i class="fas fa-users"></i> 用户管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin_warning_management.html" class="nav-link">
+                        <i class="fas fa-exclamation-triangle"></i> 警告管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="user_index.html" class="nav-link">
+                        <i class="fas fa-eye"></i> 用户端
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> 退出
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="main-content">
+        <div class="container">
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1><i class="fas fa-tachometer-alt"></i> 管理员控制台</h1>
+                <p>欢迎使用工地安全帽检测系统管理端，当前时间：<span id="currentTime"></span></p>
+            </div>
+
+            <!-- 系统状态概览 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalCameras">12</h3>
+                        <p>总摄像头数</p>
+                        <small class="stat-change positive">+2 本月新增</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalUsers">45</h3>
+                        <p>注册用户数</p>
+                        <small class="stat-change positive">+5 本周新增</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalWarnings">1,234</h3>
+                        <p>总警告数</p>
+                        <small class="stat-change negative">+23 今日新增</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="systemUptime">99.8%</h3>
+                        <p>系统可用性</p>
+                        <small class="stat-change positive">本月平均</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 管理功能快速入口 -->
+            <div class="section">
+                <h2><i class="fas fa-tools"></i> 管理功能</h2>
+                <div class="admin-functions">
+                    <div class="function-card">
+                        <div class="function-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h3>用户管理</h3>
+                        <p>添加、编辑、删除用户账户，管理用户权限和角色</p>
+                        <a href="admin_user_management.html" class="btn btn-primary">进入管理</a>
+                    </div>
+                    <div class="function-card">
+                        <div class="function-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h3>警告管理</h3>
+                        <p>查看和管理所有警告记录，处理警告事件</p>
+                        <a href="admin_warning_management.html" class="btn btn-primary">进入管理</a>
+                    </div>
+                    <div class="function-card">
+                        <div class="function-icon">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <h3>系统设置</h3>
+                        <p>配置系统参数，管理检测阈值和警告规则</p>
+                        <a href="#" class="btn btn-primary" onclick="openSystemSettings()">进入设置</a>
+                    </div>
+                    <div class="function-card">
+                        <div class="function-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h3>数据导出</h3>
+                        <p>导出系统数据报告，生成统计分析文档</p>
+                        <a href="#" class="btn btn-primary" onclick="openDataExport()">数据导出</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统监控面板 -->
+            <div class="section">
+                <h2><i class="fas fa-desktop"></i> 系统监控</h2>
+                <div class="monitoring-grid">
+                    <div class="monitor-card">
+                        <h3>服务器状态</h3>
+                        <div class="server-status">
+                            <div class="status-item">
+                                <span class="status-label">CPU使用率:</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 45%"></div>
+                                </div>
+                                <span class="status-value">45%</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">内存使用率:</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 62%"></div>
+                                </div>
+                                <span class="status-value">62%</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">磁盘使用率:</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 38%"></div>
+                                </div>
+                                <span class="status-value">38%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="monitor-card">
+                        <h3>摄像头状态</h3>
+                        <div class="camera-status">
+                            <div class="status-summary">
+                                <div class="status-count online">
+                                    <span class="count">10</span>
+                                    <span class="label">在线</span>
+                                </div>
+                                <div class="status-count offline">
+                                    <span class="count">2</span>
+                                    <span class="label">离线</span>
+                                </div>
+                            </div>
+                            <div class="camera-list">
+                                <div class="camera-item online">
+                                    <i class="fas fa-video"></i>
+                                    <span>摄像头-001</span>
+                                    <span class="status">在线</span>
+                                </div>
+                                <div class="camera-item online">
+                                    <i class="fas fa-video"></i>
+                                    <span>摄像头-002</span>
+                                    <span class="status">在线</span>
+                                </div>
+                                <div class="camera-item offline">
+                                    <i class="fas fa-video-slash"></i>
+                                    <span>摄像头-003</span>
+                                    <span class="status">离线</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最新活动日志 -->
+            <div class="section">
+                <h2><i class="fas fa-history"></i> 最新活动日志</h2>
+                <div class="activity-log">
+                    <div class="log-item">
+                        <div class="log-time">2024-01-15 14:30:25</div>
+                        <div class="log-content">
+                            <i class="fas fa-user-plus text-success"></i>
+                            <span>管理员添加了新用户: 张三 (工程师)</span>
+                        </div>
+                    </div>
+                    <div class="log-item">
+                        <div class="log-time">2024-01-15 14:25:12</div>
+                        <div class="log-content">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                            <span>摄像头-005检测到未戴安全帽警告，已通知相关人员</span>
+                        </div>
+                    </div>
+                    <div class="log-item">
+                        <div class="log-time">2024-01-15 14:20:08</div>
+                        <div class="log-content">
+                            <i class="fas fa-cog text-info"></i>
+                            <span>系统配置已更新：检测灵敏度调整为85%</span>
+                        </div>
+                    </div>
+                    <div class="log-item">
+                        <div class="log-time">2024-01-15 14:15:33</div>
+                        <div class="log-content">
+                            <i class="fas fa-video text-danger"></i>
+                            <span>摄像头-003连接中断，请检查网络连接</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <a href="#" class="btn btn-outline" onclick="viewAllLogs()">查看所有日志</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        /**
+         * 更新当前时间显示
+         */
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        /**
+         * 模拟数据更新
+         */
+        function updateStats() {
+            // 模拟实时数据更新
+            const totalWarnings = document.getElementById('totalWarnings');
+            const currentCount = parseInt(totalWarnings.textContent.replace(',', ''));
+            
+            // 随机增加警告数
+            if (Math.random() < 0.1) {
+                totalWarnings.textContent = (currentCount + 1).toLocaleString();
+            }
+
+            // 更新系统可用性
+            const uptime = document.getElementById('systemUptime');
+            const randomUptime = (99.5 + Math.random() * 0.5).toFixed(1);
+            uptime.textContent = randomUptime + '%';
+        }
+
+        /**
+         * 打开系统设置
+         */
+        function openSystemSettings() {
+            alert('系统设置功能开发中...');
+        }
+
+        /**
+         * 打开数据导出
+         */
+        function openDataExport() {
+            alert('数据导出功能开发中...');
+        }
+
+        /**
+         * 查看所有日志
+         */
+        function viewAllLogs() {
+            alert('日志查看功能开发中...');
+        }
+
+        /**
+         * 退出登录
+         */
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                alert('已退出登录');
+                // 这里可以添加实际的退出逻辑
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentTime();
+            
+            // 每秒更新时间
+            setInterval(updateCurrentTime, 1000);
+            
+            // 每5秒更新统计数据
+            setInterval(updateStats, 5000);
+        });
+    </script>
+
+    <style>
+        /* 管理端特有样式 */
+        .admin-functions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .function-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .function-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .function-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: white;
+            font-size: 24px;
+        }
+
+        .function-card h3 {
+            margin: 0 0 10px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .function-card p {
+            color: #666;
+            margin: 0 0 20px;
+            line-height: 1.5;
+        }
+
+        .monitoring-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .monitor-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .monitor-card h3 {
+            margin: 0 0 20px;
+            color: #333;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .server-status .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-label {
+            width: 100px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .camera-status .status-summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .status-count {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .status-count.online {
+            background: #e8f5e8;
+            color: #4CAF50;
+        }
+
+        .status-count.offline {
+            background: #ffeaea;
+            color: #f44336;
+        }
+
+        .status-count .count {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .status-count .label {
+            font-size: 14px;
+        }
+
+        .camera-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .camera-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .camera-item:last-child {
+            border-bottom: none;
+        }
+
+        .camera-item i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .camera-item.online {
+            color: #4CAF50;
+        }
+
+        .camera-item.offline {
+            color: #f44336;
+        }
+
+        .camera-item .status {
+            margin-left: auto;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background: currentColor;
+            color: white;
+        }
+
+        .activity-log {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .log-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            width: 150px;
+            color: #999;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .log-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .log-content i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .text-success { color: #4CAF50; }
+        .text-warning { color: #ff9800; }
+        .text-info { color: #2196F3; }
+        .text-danger { color: #f44336; }
+
+        @media (max-width: 768px) {
+            .admin-functions {
+                grid-template-columns: 1fr;
+            }
+            
+            .monitoring-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .log-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .log-time {
+                width: auto;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</body>
+</html>
