@@ -25,6 +25,14 @@
                 :disabled="!permissionRequested">
                 {{ allCamerasActive ? '关闭全部摄像头' : '开启全部摄像头' }}
               </button>
+              <button @click="toggleRenderMode" 
+                class="btn btn-sm bg-purple-600 hover:bg-purple-700 text-white border-0"
+                :disabled="!permissionRequested">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                </svg>
+                {{ renderMode === 'canvas' ? '切换到Video模式' : '切换到Canvas模式' }}
+              </button>
               <button @click="exportWarnings" 
                 class="btn btn-sm bg-blue-600 hover:bg-blue-700 text-white border-0">
                 导出警告记录
@@ -64,8 +72,18 @@
                   </span>
                 </div>
 
-                <video v-if="camera.active" :ref="(el) => setVideoRef(camera.id, el as HTMLVideoElement)"
-                  class="w-full h-full object-cover" autoplay muted playsinline></video>
+                <!-- Canvas渲染模式 -->
+                <canvas v-if="camera.active && renderMode === 'canvas'" 
+                  :ref="(el) => setCanvasRef(camera.id, el as HTMLCanvasElement)"
+                  class="w-full h-full object-cover"></canvas>
+                
+                <!-- Video渲染模式 -->
+                <video v-if="camera.active && renderMode === 'video'" 
+                  :ref="(el) => setVideoRef(camera.id, el as HTMLVideoElement)"
+                  class="w-full h-full object-cover" 
+                  autoplay 
+                  muted 
+                  playsinline></video>
 
                 <div v-else class="flex items-center justify-center h-full text-gray-500">
                   <div class="text-center">
@@ -205,13 +223,21 @@
           </span>
         </div>
         
-        <!-- 放大的视频 -->
+        <!-- Canvas渲染模式预览 -->
+        <canvas 
+          v-if="selectedCamera.active && selectedCamera.stream && renderMode === 'canvas'"
+          :ref="(el) => previewCanvasEl = el as HTMLCanvasElement"
+          class="max-w-full max-h-full object-contain rounded-lg"
+          @click.stop
+        ></canvas>
+        
+        <!-- Video渲染模式预览 -->
         <video 
-          v-if="selectedCamera.active && selectedCamera.stream"
+          v-if="selectedCamera.active && selectedCamera.stream && renderMode === 'video'"
           :ref="(el) => previewVideoEl = el as HTMLVideoElement"
           class="max-w-full max-h-full object-contain rounded-lg"
-          autoplay
-          muted
+          autoplay 
+          muted 
           playsinline
           @click.stop
         ></video>
@@ -258,7 +284,10 @@ const allCamerasActive = ref(false)
 const availableDevices = ref<MediaDeviceInfo[]>([])
 const cameras = ref<Camera[]>([])
 const selectedCamera = ref<Camera | null>(null)
+const renderMode = ref<'canvas' | 'video'>('canvas')
+const canvasRefs = ref<Map<number, HTMLCanvasElement>>(new Map())
 const videoRefs = ref<Map<number, HTMLVideoElement>>(new Map())
+const videoElements = ref<Map<number, HTMLVideoElement>>(new Map())
 
 // 警告数据
 const warnings = ref<Warning[]>([
@@ -321,41 +350,148 @@ const stats = ref<Stats>({
 })
 
 // 放大预览
+const previewCanvasEl = ref<HTMLCanvasElement | null>(null)
 const previewVideoEl = ref<HTMLVideoElement | null>(null)
 
-// 设置视频元素引用
-const setVideoRef = async (cameraId: number, el: HTMLVideoElement | null) => {
+// 设置canvas元素引用
+const setCanvasRef = async (cameraId: number, el: HTMLCanvasElement | null) => {
   if (!el) return
-  videoRefs.value.set(cameraId, el)
+  canvasRefs.value.set(cameraId, el)
   const camera = cameras.value.find(c => c.id === cameraId)
   if (camera?.stream) {
-    el.srcObject = camera.stream
-    el.muted = true
+    // 创建隐藏的video元素用于获取视频流
+    const video = document.createElement('video')
+    video.srcObject = camera.stream
+    video.muted = true
+    video.autoplay = true
+    video.playsInline = true
+    videoElements.value.set(cameraId, video)
+    
+    // 开始绘制到canvas
+    video.addEventListener('loadedmetadata', () => {
+      drawVideoToCanvas(video, el)
+    })
+    
     try {
-      await el.play()
+      await video.play()
     } catch (error) {
       console.warn(`视频播放失败 (摄像头 ${cameraId}):`, error)
     }
   }
 }
 
-// 放大窗口视频绑定
-const setPreviewRef = (el: HTMLVideoElement | null) => {
-  previewVideoEl.value = el
+// 设置video元素引用
+const setVideoRef = (cameraId: number, el: HTMLVideoElement | null) => {
+  if (!el) return
+  videoRefs.value.set(cameraId, el)
+  const camera = cameras.value.find(c => c.id === cameraId)
+  if (camera?.stream) {
+    el.srcObject = camera.stream
+    el.play().catch(error => {
+      console.warn(`视频播放失败 (摄像头 ${cameraId}):`, error)
+    })
+  }
+}
+
+// 将视频帧绘制到canvas
+const drawVideoToCanvas = (video: HTMLVideoElement, canvas: HTMLCanvasElement) => {
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  
+  const draw = () => {
+    if (video.readyState >= 2) {
+      // 设置canvas尺寸匹配容器
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width
+      canvas.height = rect.height
+      
+      // 计算视频在canvas中的绘制区域（保持宽高比）
+      const videoAspect = video.videoWidth / video.videoHeight
+      const canvasAspect = canvas.width / canvas.height
+      
+      let drawWidth, drawHeight, drawX, drawY
+      
+      if (videoAspect > canvasAspect) {
+        // 视频更宽，以canvas宽度为准
+        drawWidth = canvas.width
+        drawHeight = canvas.width / videoAspect
+        drawX = 0
+        drawY = (canvas.height - drawHeight) / 2
+      } else {
+        // 视频更高，以canvas高度为准
+        drawHeight = canvas.height
+        drawWidth = canvas.height * videoAspect
+        drawX = (canvas.width - drawWidth) / 2
+        drawY = 0
+      }
+      
+      // 清除canvas并绘制视频帧
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(video, drawX, drawY, drawWidth, drawHeight)
+    }
+    
+    // 继续下一帧
+    if (!video.paused && !video.ended) {
+      requestAnimationFrame(draw)
+    }
+  }
+  
+  draw()
+}
+
+// 放大窗口canvas绑定
+const setPreviewCanvasRef = (el: HTMLCanvasElement | null) => {
+  previewCanvasEl.value = el
   if (el && selectedCamera.value?.stream) {
-    el.srcObject = selectedCamera.value.stream
-    el.play().catch(() => { })
+    // 创建预览用的video元素
+    if (!previewVideoEl.value) {
+      previewVideoEl.value = document.createElement('video')
+    }
+    previewVideoEl.value.srcObject = selectedCamera.value.stream
+    previewVideoEl.value.muted = true
+    previewVideoEl.value.autoplay = true
+    previewVideoEl.value.playsInline = true
+    
+    previewVideoEl.value.addEventListener('loadedmetadata', () => {
+      if (previewVideoEl.value && el) {
+        drawVideoToCanvas(previewVideoEl.value, el)
+      }
+    })
+    
+    previewVideoEl.value.play().catch(() => { })
   }
 }
 
 const openPreview = async (camera: Camera) => {
   if (camera.active && camera.stream) {
     selectedCamera.value = camera
-    // 等待DOM更新后设置预览视频流
+    // 等待DOM更新后设置预览
     await nextTick()
-    if (previewVideoEl.value && camera.stream) {
+    
+    if (renderMode.value === 'canvas' && previewCanvasEl.value && camera.stream) {
+      // Canvas模式预览
+      if (!previewVideoEl.value) {
+        previewVideoEl.value = document.createElement('video')
+      }
       previewVideoEl.value.srcObject = camera.stream
       previewVideoEl.value.muted = true
+      previewVideoEl.value.autoplay = true
+      previewVideoEl.value.playsInline = true
+      
+      previewVideoEl.value.addEventListener('loadedmetadata', () => {
+        if (previewVideoEl.value && previewCanvasEl.value) {
+          drawVideoToCanvas(previewVideoEl.value, previewCanvasEl.value)
+        }
+      })
+      
+      try {
+        await previewVideoEl.value.play()
+      } catch (error) {
+        console.warn('预览视频播放失败:', error)
+      }
+    } else if (renderMode.value === 'video' && previewVideoEl.value && camera.stream) {
+      // Video模式预览
+      previewVideoEl.value.srcObject = camera.stream
       try {
         await previewVideoEl.value.play()
       } catch (error) {
@@ -366,9 +502,21 @@ const openPreview = async (camera: Camera) => {
 }
 
 const closePreview = () => {
+  // 清理video模式的预览元素
   if (previewVideoEl.value) {
     previewVideoEl.value.srcObject = null
+    previewVideoEl.value.pause()
   }
+  
+  // 清理canvas模式的预览元素
+  if (previewCanvasEl.value) {
+    const ctx = previewCanvasEl.value.getContext('2d')
+    if (ctx) {
+      ctx.clearRect(0, 0, previewCanvasEl.value.width, previewCanvasEl.value.height)
+    }
+  }
+  
+  // 重置选中的摄像头
   selectedCamera.value = null
 }
 
@@ -401,12 +549,37 @@ const requestCameraPermission = async () => {
 const toggleCamera = async (id: number) => {
   const camera = cameras.value.find(c => c.id === id)
   if (!camera) return
+  
   if (camera.active) {
+    // 关闭摄像头
     camera.stream?.getTracks().forEach(t => t.stop())
     camera.stream = null
     camera.active = false
-    videoRefs.value.get(id)!.srcObject = null
+    
+    // 清理canvas相关资源
+    const canvas = canvasRefs.value.get(id)
+    if (canvas) {
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+      }
+    }
+    
+    const hiddenVideo = videoElements.value.get(id)
+    if (hiddenVideo) {
+      hiddenVideo.srcObject = null
+      hiddenVideo.pause()
+      videoElements.value.delete(id)
+    }
+    
+    // 清理video相关资源
+    const video = videoRefs.value.get(id)
+    if (video) {
+      video.srcObject = null
+      video.pause()
+    }
   } else {
+    // 开启摄像头
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { deviceId: camera.deviceId ? { exact: camera.deviceId } : undefined }
@@ -414,14 +587,40 @@ const toggleCamera = async (id: number) => {
       camera.stream = stream
       camera.active = true
       await nextTick() // 确保DOM更新完成
-      const el = videoRefs.value.get(id)
-      if (el) {
-        el.srcObject = stream
-        el.muted = true // 确保静音避免浏览器拦截
-        try {
-          await el.play()
-        } catch (playError) {
-          console.warn('视频自动播放失败，用户可能需要手动播放:', playError)
+      
+      if (renderMode.value === 'canvas') {
+        // Canvas模式
+        const canvas = canvasRefs.value.get(id)
+        if (canvas) {
+          // 创建隐藏的video元素用于获取视频流
+          const video = document.createElement('video')
+          video.srcObject = stream
+          video.muted = true
+          video.autoplay = true
+          video.playsInline = true
+          videoElements.value.set(id, video)
+          
+          // 开始绘制到canvas
+          video.addEventListener('loadedmetadata', () => {
+            drawVideoToCanvas(video, canvas)
+          })
+          
+          try {
+            await video.play()
+          } catch (playError) {
+            console.warn('视频自动播放失败，用户可能需要手动播放:', playError)
+          }
+        }
+      } else {
+        // Video模式
+        const video = videoRefs.value.get(id)
+        if (video) {
+          video.srcObject = stream
+          try {
+            await video.play()
+          } catch (playError) {
+            console.warn('视频自动播放失败，用户可能需要手动播放:', playError)
+          }
         }
       }
     } catch (e) {
@@ -473,9 +672,92 @@ const resetWarnings = () => {
   }
 }
 
+// 切换渲染模式
+const toggleRenderMode = async () => {
+  const newMode = renderMode.value === 'canvas' ? 'video' : 'canvas'
+  
+  // 先关闭所有摄像头以确保完全卸载
+  const activeCameras = cameras.value.filter(c => c.active).map(c => c.id)
+  
+  // 关闭所有活跃的摄像头
+  for (const cameraId of activeCameras) {
+    await toggleCamera(cameraId)
+  }
+  
+  // 清理所有引用
+  if (renderMode.value === 'canvas') {
+    // 清理canvas相关资源
+    canvasRefs.value.forEach(canvas => {
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+      }
+    })
+    canvasRefs.value.clear()
+    
+    videoElements.value.forEach(video => {
+      video.srcObject = null
+      video.pause()
+    })
+    videoElements.value.clear()
+  } else {
+    // 清理video相关资源
+    videoRefs.value.forEach(video => {
+      video.srcObject = null
+      video.pause()
+    })
+    videoRefs.value.clear()
+  }
+  
+  // 关闭预览窗口
+  if (selectedCamera.value) {
+    closePreview()
+  }
+  
+  // 切换模式
+  renderMode.value = newMode
+  
+  // 等待DOM更新
+  await nextTick()
+  
+  // 重新开启之前活跃的摄像头
+  for (const cameraId of activeCameras) {
+    await toggleCamera(cameraId)
+  }
+}
+
 // 清理
 onUnmounted(() => {
   cameras.value.forEach(c => c.stream?.getTracks().forEach(t => t.stop()))
+  
+  // 清理所有隐藏的video元素（用于canvas模式）
+  videoElements.value.forEach(video => {
+    video.srcObject = null
+    video.pause()
+  })
+  videoElements.value.clear()
+  
+  // 清理所有video元素引用（用于video模式）
+  videoRefs.value.forEach(video => {
+    video.srcObject = null
+    video.pause()
+  })
+  videoRefs.value.clear()
+  
+  // 清理预览video元素
+  if (previewVideoEl.value) {
+    previewVideoEl.value.srcObject = null
+    previewVideoEl.value.pause()
+  }
+  
+  // 清理所有canvas
+  canvasRefs.value.forEach(canvas => {
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    }
+  })
+  canvasRefs.value.clear()
 })
 </script>
 
