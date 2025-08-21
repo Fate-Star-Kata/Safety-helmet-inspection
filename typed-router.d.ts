@@ -27,6 +27,9 @@ declare module 'vue-router/auto-routes' {
     '/admin/warnings/': RouteRecordInfo<'/admin/warnings/', '/admin/warnings', Record<never, never>, Record<never, never>>,
     '/auth/login/': RouteRecordInfo<'/auth/login/', '/auth/login', Record<never, never>, Record<never, never>>,
     '/auth/Register/': RouteRecordInfo<'/auth/Register/', '/auth/Register', Record<never, never>, Record<never, never>>,
+    '/detection/': RouteRecordInfo<'/detection/', '/detection', Record<never, never>, Record<never, never>>,
+    '/history/': RouteRecordInfo<'/history/', '/history', Record<never, never>, Record<never, never>>,
+    '/statistics/': RouteRecordInfo<'/statistics/', '/statistics', Record<never, never>, Record<never, never>>,
     '/templates/': RouteRecordInfo<'/templates/', '/templates', Record<never, never>, Record<never, never>>,
     '/templates/analytics': RouteRecordInfo<'/templates/analytics', '/templates/analytics', Record<never, never>, Record<never, never>>,
     '/templates/knowledge': RouteRecordInfo<'/templates/knowledge', '/templates/knowledge', Record<never, never>, Record<never, never>>,
@@ -80,6 +83,18 @@ declare module 'vue-router/auto-routes' {
     }
     'src/pages/auth/Register/index.vue': {
       routes: '/auth/Register/'
+      views: never
+    }
+    'src/pages/detection/index.vue': {
+      routes: '/detection/'
+      views: never
+    }
+    'src/pages/history/index.vue': {
+      routes: '/history/'
+      views: never
+    }
+    'src/pages/statistics/index.vue': {
+      routes: '/statistics/'
       views: never
     }
     'src/pages/templates/index.vue': {
