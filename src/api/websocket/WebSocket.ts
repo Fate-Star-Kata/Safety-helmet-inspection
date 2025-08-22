@@ -49,6 +49,8 @@ export default class WebSocketClient {
     this.ws = new WebSocket(this.url)
 
     this.ws.onopen = () => {
+      // 连接成功日志
+      console.log('[WS] open:', this.url)
       this.callbacks.onOpen?.()
       this.reconnectAttempts = 0 // 重连计数清零
       this.startHeartbeat()
@@ -56,10 +58,27 @@ export default class WebSocketClient {
     }
 
     this.ws.onmessage = (event: MessageEvent) => {
+      // 接收消息日志（做长度截断，避免刷屏）
+      const data = event.data
+      if (typeof data === 'string') {
+        const show = data.length > 200 ? data.slice(0, 200) + ` ...(${data.length})` : data
+        console.log('[WS] recv(string):', show)
+      } else if (data instanceof Blob) {
+        console.log('[WS] recv(blob):', data.size, 'bytes')
+      } else {
+        try {
+          // 某些环境下为 ArrayBuffer
+          const size = (data as ArrayBuffer).byteLength
+          console.log('[WS] recv(buffer):', size, 'bytes')
+        } catch {
+          console.log('[WS] recv:', data)
+        }
+      }
       this.callbacks.onMessage?.(event.data)
     }
 
     this.ws.onclose = (event: CloseEvent) => {
+      console.log('[WS] close:', { code: event.code, reason: event.reason, wasClean: event.wasClean })
       this.callbacks.onClose?.(event)
       this.ws = null
       this.stopHeartbeat()
@@ -71,6 +90,7 @@ export default class WebSocketClient {
     }
 
     this.ws.onerror = (event: Event) => {
+      console.error('[WS] error:', event)
       this.callbacks.onError?.(event)
       ElMessage.error('WebSocket 连接出错')
     }
@@ -85,7 +105,7 @@ export default class WebSocketClient {
 
     this.reconnectAttempts++
     setTimeout(() => {
-      console.log(`🔄 正在重连... (第 ${this.reconnectAttempts} 次)`)
+      console.log(`🔄 正在重连... (第 ${this.reconnectAttempts} 次)`) 
       this.connect()
     }, this.options.reconnectInterval)
   }
@@ -113,6 +133,35 @@ export default class WebSocketClient {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       console.error('WebSocket 未连接，无法发送消息')
       return
+    }
+
+    // 发送前打印（过滤心跳，避免刷屏）
+    const isHeartbeat = typeof data === 'string' && data === this.options.heartbeatMsg
+    if (!isHeartbeat) {
+      if (typeof data === 'string') {
+        const show = data.length > 200 ? data.slice(0, 200) + ` ...(${data.length})` : data
+        console.log('[WS] send(string):', show)
+      } else if (data instanceof Blob) {
+        console.log('[WS] send(blob):', data.size, 'bytes')
+      } else if (data instanceof ArrayBuffer) {
+        console.log('[WS] send(buffer):', data.byteLength, 'bytes')
+      } else {
+        // 对象：优先打印 type 字段与简要信息
+        const summary: Record<string, unknown> = {}
+        if ((data as any).type) summary.type = (data as any).type
+        if ((data as any).camera_id) summary.camera_id = (data as any).camera_id
+        if ((data as any).timestamp) summary.timestamp = (data as any).timestamp
+        // 如果包含图像数据，打印其长度（不打印内容，避免刷屏）
+        if ((data as any).image_data && typeof (data as any).image_data === 'string') {
+          summary.image_data_len = (data as any).image_data.length
+        }
+        try {
+          const json = JSON.stringify(data)
+          console.log('[WS] send(object):', Object.keys(summary).length ? summary : json.length > 200 ? json.slice(0, 200) + ` ...(${json.length})` : json)
+        } catch {
+          console.log('[WS] send(object):', data)
+        }
+      }
     }
 
     if (typeof data === 'object' && !(data instanceof ArrayBuffer) && !(data instanceof Blob)) {
