@@ -249,121 +249,122 @@
       </div>
     </div>
 
-    <!-- 详情弹窗 -->
-    <div v-if="showDetailModal" class="fixed inset-0 bg-[#00000080] bg-opacity-50 flex items-center justify-center z-50"
-      @click="closeDetail">
-      <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
-        <!-- 弹窗头部 -->
-        <div class="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 class="text-xl font-semibold text-gray-800">警告详情</h3>
-          <button @click="closeDetail" class="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
+    </Motion>
+  </Motion>
+
+  <!-- 详情弹窗 -->
+  <div v-if="showDetailModal" class="fixed inset-0 bg-[#00000080] bg-opacity-50 flex items-center justify-center z-50"
+    @click="closeDetail">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
+      <!-- 弹窗头部 -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-800">警告详情</h3>
+        <button @click="closeDetail" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 弹窗内容 -->
+      <div class="p-6" v-if="selectedRecord">
+        <!-- 基本信息 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="space-y-4">
+            <div class="flex items-center space-x-3">
+              <span class="text-2xl" :class="getLevelColorClass(selectedRecord.level)">
+                {{ getWarningIcon(selectedRecord.level) }}
+              </span>
+              <div>
+                <h4 class="text-lg font-semibold" :class="{
+                  'text-red-600': selectedRecord.level === '严重警告',
+                  'text-yellow-600': selectedRecord.level === '一般警告',
+                  'text-blue-600': selectedRecord.level === '提示信息'
+                }">
+                  {{ selectedRecord.level }}
+                </h4>
+                <p class="text-sm text-gray-500">{{ formatDateTime(selectedRecord.datetime) }}</p>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-600 w-20">摄像头:</span>
+                <span class="text-sm text-gray-800">{{ selectedRecord.camera }}</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-600 w-20">位置:</span>
+                <span class="text-sm text-gray-800">{{ selectedRecord.location }}</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-600 w-20">检测人数:</span>
+                <span class="text-sm text-gray-800">{{ selectedRecord.personCount }}人</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-600 w-20">置信度:</span>
+                <span class="text-sm text-gray-800">{{ selectedRecord.confidence }}%</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-600 w-20">处理状态:</span>
+                <span class="text-sm px-2 py-1 rounded-full"
+                  :class="selectedRecord.processed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                  {{ selectedRecord.processed ? '已处理' : '未处理' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 截图区域 -->
+          <div class="space-y-4">
+            <h5 class="text-sm font-medium text-gray-600">警告截图</h5>
+            <div class="bg-gray-100 rounded-lg p-4 text-center">
+              <div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                <div class="text-center">
+                  <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                  <p class="text-sm text-gray-500">{{ selectedRecord.screenshotText }}</p>
+                  <p class="text-xs text-gray-400 mt-1">点击查看大图</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- 弹窗内容 -->
-        <div class="p-6" v-if="selectedRecord">
-          <!-- 基本信息 -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="space-y-4">
-              <div class="flex items-center space-x-3">
-                <span class="text-2xl" :class="getLevelColorClass(selectedRecord.level)">
-                  {{ getWarningIcon(selectedRecord.level) }}
-                </span>
-                <div>
-                  <h4 class="text-lg font-semibold" :class="{
-                    'text-red-600': selectedRecord.level === '严重警告',
-                    'text-yellow-600': selectedRecord.level === '一般警告',
-                    'text-blue-600': selectedRecord.level === '提示信息'
-                  }">
-                    {{ selectedRecord.level }}
-                  </h4>
-                  <p class="text-sm text-gray-500">{{ formatDateTime(selectedRecord.datetime) }}</p>
-                </div>
-              </div>
-
-              <div class="space-y-3">
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-medium text-gray-600 w-20">摄像头:</span>
-                  <span class="text-sm text-gray-800">{{ selectedRecord.camera }}</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-medium text-gray-600 w-20">位置:</span>
-                  <span class="text-sm text-gray-800">{{ selectedRecord.location }}</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-medium text-gray-600 w-20">检测人数:</span>
-                  <span class="text-sm text-gray-800">{{ selectedRecord.personCount }}人</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-medium text-gray-600 w-20">置信度:</span>
-                  <span class="text-sm text-gray-800">{{ selectedRecord.confidence }}%</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm font-medium text-gray-600 w-20">处理状态:</span>
-                  <span class="text-sm px-2 py-1 rounded-full"
-                    :class="selectedRecord.processed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                    {{ selectedRecord.processed ? '已处理' : '未处理' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 截图区域 -->
-            <div class="space-y-4">
-              <h5 class="text-sm font-medium text-gray-600">警告截图</h5>
-              <div class="bg-gray-100 rounded-lg p-4 text-center">
-                <div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <div class="text-center">
-                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor"
-                      viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                      </path>
-                    </svg>
-                    <p class="text-sm text-gray-500">{{ selectedRecord.screenshotText }}</p>
-                    <p class="text-xs text-gray-400 mt-1">点击查看大图</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <!-- 详细描述 -->
+        <div class="mb-6">
+          <h5 class="text-sm font-medium text-gray-600 mb-2">详细描述</h5>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-sm text-gray-700 leading-relaxed">{{ selectedRecord.description }}</p>
           </div>
+        </div>
 
-          <!-- 详细描述 -->
-          <div class="mb-6">
-            <h5 class="text-sm font-medium text-gray-600 mb-2">详细描述</h5>
-            <div class="bg-gray-50 rounded-lg p-4">
-              <p class="text-sm text-gray-700 leading-relaxed">{{ selectedRecord.description }}</p>
-            </div>
-          </div>
-
-          <!-- 操作按钮 -->
-          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-            <button @click="closeDetail" class="btn btn-outline">
-              关闭
-            </button>
-            <button v-if="!selectedRecord.processed" @click="markAsProcessed"
-              class="btn bg-green-600 hover:bg-green-700 text-white border-0">
-              标记为已处理
-            </button>
-            <button @click="downloadScreenshot" class="btn bg-blue-600 hover:bg-blue-700 text-white border-0">
-              下载截图
-            </button>
-            <button @click="generateDetailReport" class="btn bg-gray-600 hover:bg-gray-700 text-white border-0">
-              生成报告
-            </button>
-          </div>
+        <!-- 操作按钮 -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button @click="closeDetail" class="btn btn-outline">
+            关闭
+          </button>
+          <button v-if="!selectedRecord.processed" @click="markAsProcessed"
+            class="btn bg-green-600 hover:bg-green-700 text-white border-0">
+            标记为已处理
+          </button>
+          <button @click="downloadScreenshot" class="btn bg-blue-600 hover:bg-blue-700 text-white border-0">
+            下载截图
+          </button>
+          <button @click="generateDetailReport" class="btn bg-gray-600 hover:bg-gray-700 text-white border-0">
+            生成报告
+          </button>
         </div>
       </div>
     </div>
-    </Motion>
-  </Motion>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Motion } from 'motion-v'
 
 // 接口定义
@@ -577,11 +578,15 @@ const generateReport = (): void => {
 const showDetail = (record: WarningRecord): void => {
   selectedRecord.value = record
   showDetailModal.value = true
+  // 阻止页面滚动
+  document.body.style.overflow = 'hidden'
 }
 
 const closeDetail = (): void => {
   showDetailModal.value = false
   selectedRecord.value = null
+  // 恢复页面滚动
+  document.body.style.overflow = 'auto'
 }
 
 const markAsProcessed = (): void => {
@@ -612,6 +617,11 @@ const generateDetailReport = (): void => {
 onMounted(() => {
   allRecords.value = generateMockData()
   applyFilters()
+})
+
+// 组件卸载时恢复滚动
+onUnmounted(() => {
+  document.body.style.overflow = 'auto'
 })
 </script>
 
