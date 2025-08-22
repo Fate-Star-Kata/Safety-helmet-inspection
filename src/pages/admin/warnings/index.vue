@@ -571,7 +571,9 @@ onMounted(() => {
           <template #header>
             <div class="card-header">
               <h3>筛选条件</h3>
-              <el-icon><Filter /></el-icon>
+              <el-icon>
+                <Filter />
+              </el-icon>
             </div>
           </template>
 
@@ -579,14 +581,11 @@ onMounted(() => {
             <el-row :gutter="24">
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="关键词">
-                  <el-input
-                    v-model="filters.keyword"
-                    placeholder="搜索摄像头、位置或描述"
-                    clearable
-                    @keyup.enter="handleSearch"
-                  >
+                  <el-input v-model="filters.keyword" placeholder="搜索摄像头、位置或描述" clearable @keyup.enter="handleSearch">
                     <template #prefix>
-                      <el-icon><Search /></el-icon>
+                      <el-icon>
+                        <Search />
+                      </el-icon>
                     </template>
                   </el-input>
                 </el-form-item>
@@ -595,12 +594,8 @@ onMounted(() => {
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="摄像头">
                   <el-select v-model="filters.cameraId" placeholder="选择摄像头" clearable>
-                    <el-option
-                      v-for="camera in cameraOptions"
-                      :key="camera.value"
-                      :label="camera.label"
-                      :value="camera.value"
-                    />
+                    <el-option v-for="camera in cameraOptions" :key="camera.value" :label="camera.label"
+                      :value="camera.value" />
                   </el-select>
                 </el-form-item>
               </el-col>
@@ -608,12 +603,7 @@ onMounted(() => {
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="警告类型">
                   <el-select v-model="filters.type" placeholder="选择类型" clearable>
-                    <el-option
-                      v-for="type in typeOptions"
-                      :key="type.value"
-                      :label="type.label"
-                      :value="type.value"
-                    />
+                    <el-option v-for="type in typeOptions" :key="type.value" :label="type.label" :value="type.value" />
                   </el-select>
                 </el-form-item>
               </el-col>
@@ -621,12 +611,8 @@ onMounted(() => {
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="严重程度">
                   <el-select v-model="filters.severity" placeholder="选择严重程度" clearable>
-                    <el-option
-                      v-for="severity in severityOptions"
-                      :key="severity.value"
-                      :label="severity.label"
-                      :value="severity.value"
-                    />
+                    <el-option v-for="severity in severityOptions" :key="severity.value" :label="severity.label"
+                      :value="severity.value" />
                   </el-select>
                 </el-form-item>
               </el-col>
@@ -634,27 +620,17 @@ onMounted(() => {
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="状态">
                   <el-select v-model="filters.status" placeholder="选择状态" clearable>
-                    <el-option
-                      v-for="status in statusOptions"
-                      :key="status.value"
-                      :label="status.label"
-                      :value="status.value"
-                    />
+                    <el-option v-for="status in statusOptions" :key="status.value" :label="status.label"
+                      :value="status.value" />
                   </el-select>
                 </el-form-item>
               </el-col>
 
               <el-col :xs="24" :sm="12" :md="8" :lg="6">
                 <el-form-item label="日期范围">
-                  <el-date-picker
-                    v-model="filters.dateRange"
-                    type="datetimerange"
-                    range-separator="至"
-                    start-placeholder="开始日期"
-                    end-placeholder="结束日期"
-                    format="YYYY-MM-DD HH:mm:ss"
-                    value-format="YYYY-MM-DD HH:mm:ss"
-                  />
+                  <el-date-picker v-model="filters.dateRange" type="datetimerange" range-separator="至"
+                    start-placeholder="开始日期" end-placeholder="结束日期" format="YYYY-MM-DD HH:mm:ss"
+                    value-format="YYYY-MM-DD HH:mm:ss" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -665,7 +641,9 @@ onMounted(() => {
                   <el-space>
                     <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
                       <el-button type="primary" @click="handleSearch">
-                        <el-icon><Search /></el-icon>
+                        <el-icon>
+                          <Search />
+                        </el-icon>
                         搜索
                       </el-button>
                     </Motion>
@@ -692,11 +670,7 @@ onMounted(() => {
               <div class="table-actions">
                 <el-space>
                   <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
-                    <el-button
-                      type="primary"
-                      @click="handleBatchProcess"
-                      :disabled="selectedRows.length === 0"
-                    >
+                    <el-button type="primary" @click="handleBatchProcess" :disabled="selectedRows.length === 0">
                       批量处理 ({{ selectedRows.length }})
                     </el-button>
                   </Motion>
@@ -705,14 +679,8 @@ onMounted(() => {
             </div>
           </template>
 
-          <el-table
-            :data="filteredRecords"
-            v-loading="tableLoading"
-            @selection-change="handleSelectionChange"
-            stripe
-            border
-            style="width: 100%"
-          >
+          <el-table :data="filteredRecords" v-loading="tableLoading" @selection-change="handleSelectionChange" stripe
+            border style="width: 100%">
             <el-table-column type="selection" width="55" />
 
             <el-table-column prop="id" label="警告ID" width="100" />
@@ -721,11 +689,15 @@ onMounted(() => {
               <template #default="{ row }">
                 <div class="camera-info">
                   <div class="camera-name">
-                    <el-icon><VideoCamera /></el-icon>
+                    <el-icon>
+                      <VideoCamera />
+                    </el-icon>
                     {{ row.cameraName }}
                   </div>
                   <div class="camera-location">
-                    <el-icon><Location /></el-icon>
+                    <el-icon>
+                      <Location />
+                    </el-icon>
                     {{ row.location }}
                   </div>
                 </div>
@@ -779,7 +751,9 @@ onMounted(() => {
                 <div v-if="row.processedAt" class="process-info">
                   <div class="process-time">{{ formatDateTime(row.processedAt) }}</div>
                   <div class="process-user">
-                    <el-icon><User /></el-icon>
+                    <el-icon>
+                      <User />
+                    </el-icon>
                     {{ row.processedBy }}
                   </div>
                 </div>
@@ -792,39 +766,27 @@ onMounted(() => {
                 <el-space>
                   <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }">
                     <el-button type="primary" size="small" @click="handleView(row)">
-                      <el-icon><View /></el-icon>
+                      <el-icon>
+                        <View />
+                      </el-icon>
                     </el-button>
                   </Motion>
 
                   <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }">
-                    <el-button
-                      v-if="row.status === 'pending'"
-                      type="warning"
-                      size="small"
-                      @click="handleProcess(row)"
-                    >
+                    <el-button v-if="row.status === 'pending'" type="warning" size="small" @click="handleProcess(row)">
                       处理
                     </el-button>
                   </Motion>
 
                   <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }">
-                    <el-button
-                      v-if="row.status === 'processing'"
-                      type="success"
-                      size="small"
-                      @click="handleResolve(row)"
-                    >
+                    <el-button v-if="row.status === 'processing'" type="success" size="small"
+                      @click="handleResolve(row)">
                       解决
                     </el-button>
                   </Motion>
 
                   <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }">
-                    <el-button
-                      v-if="row.status === 'pending'"
-                      type="info"
-                      size="small"
-                      @click="handleIgnore(row)"
-                    >
+                    <el-button v-if="row.status === 'pending'" type="info" size="small" @click="handleIgnore(row)">
                       忽略
                     </el-button>
                   </Motion>
@@ -835,15 +797,9 @@ onMounted(() => {
 
           <!-- 分页 -->
           <div class="pagination-container">
-            <el-pagination
-              v-model:current-page="currentPage"
-              v-model:page-size="pageSize"
-              :page-sizes="[10, 20, 50, 100]"
-              :total="total"
-              layout="total, sizes, prev, pager, next, jumper"
-              @size-change="handleSizeChange"
-              @current-change="handlePageChange"
-            />
+            <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
+              :page-sizes="[10, 20, 50, 100]" :total="total" layout="total, sizes, prev, pager, next, jumper"
+              @size-change="handleSizeChange" @current-change="handlePageChange" />
           </div>
         </el-card>
       </Motion>
