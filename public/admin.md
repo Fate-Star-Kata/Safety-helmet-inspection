@@ -158,7 +158,26 @@
 **响应示例**:
 
 ```json
-
+{
+ "code": 200,
+ "msg": null,
+ "data": {
+  "logs": [
+   {
+    "id": 12,
+    "type": "user",
+    "action": "用户注册",
+    "description": "新用户 user1 注册",
+    "user": "user1",
+    "timestamp": "2025-08-22 11:01:35",
+    "severity": "info"
+   },
+  ],
+  "total": 15,
+  "page": 1,
+  "page_size": 20
+ }
+}
 ```
 
 ### 2. 警告管理（Warnings）
@@ -410,3 +429,160 @@
 
 5. **摄像头管理接口优化** - 根据实际需求调整
 6. **系统设置接口定制** - 根据业务需求定制化
+
+### 5. 数据导出
+
+#### 5.1 获取导出统计数据
+
+**接口地址**: `GET /safehat/api/data-export/stats/`
+**中文说明**: 获取各类型数据的统计信息，用于数据导出页面的统计卡片显示
+
+**响应示例**:
+
+```json
+{
+ "code": 200,
+ "msg": null,
+ "data": {
+  "stats": [
+   {
+    "type": "warnings",
+    "name": "安全警告",
+    "total_count": 18,
+    "today_count": 18,
+    "color": "#ff6b6b"
+   },
+   {
+    "type": "detections",
+    "name": "检测记录",
+    "total_count": 50,
+    "today_count": 50,
+    "color": "#4ecdc4"
+   },
+   {
+    "type": "users",
+    "name": "用户数据",
+    "total_count": 12,
+    "today_count": 0,
+    "color": "#45b7d1"
+   }
+  ]
+ }
+}
+```
+
+#### 5.2 获取导出记录列表
+
+**接口地址**: `GET /safehat/api/export-records/`
+**中文说明**: 获取导出任务记录列表，显示历史导出任务的状态和进度
+
+**响应示例**:
+
+```json
+{
+ "code": 200,
+ "msg": null,
+ "data": {
+  "records": [
+   {
+    "id": 1,
+    "name": "2024年1月安全记录",
+    "type": "warnings",
+    "status": "completed",
+    "progress": 100,
+    "file_size": "2.5MB",
+    "created_at": "2024-01-15 10:30:00",
+    "completed_at": "2024-01-15 10:32:15"
+   },
+   {
+    "id": 2,
+    "name": "每日检测数据",
+    "type": "detections",
+    "status": "processing",
+    "progress": 65,
+    "file_size": "",
+    "created_at": "2024-01-15 14:20:00",
+    "completed_at": ""
+   }
+  ],
+  "total_count": 2
+ }
+}
+```
+
+#### 5.3 创建导出任务
+
+**接口地址**: `POST /safehat/api/export-tasks/`
+**中文说明**: 创建新的数据导出任务
+
+**请求参数**:
+
+```json
+{
+  "type": "warnings",
+  "name": "2024年安全警告数据",
+  "start_date": "2024-01-01",
+  "end_date": "2024-01-31"
+}
+```
+
+**响应示例**:
+
+```json
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "task_id": 1705123456,
+    "name": "2024年安全警告数据",
+    "type": "warnings",
+    "status": "created",
+    "message": "导出任务创建成功"
+  }
+}
+```
+
+#### 5.4 导出数据
+
+**接口地址**: `POST /safehat/api/data-export/`
+**中文说明**: 导出指定类型和时间范围的数据，支持用户、警告、检测记录等数据导出
+
+**请求参数**:
+
+```json
+{
+  "type": "warnings",
+  "start_date": "2024-01-01",
+  "end_date": "2024-01-31"
+}
+```
+
+**支持的导出类型**:
+
+- `users`: 用户数据
+- `warnings`: 警告数据
+- `detections`: 检测记录
+
+**响应示例**:
+
+```json
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "export_data": [
+      {
+        "id": "123",
+        "camera_id": "CAM001",
+        "warning_level": "warning",
+        "status": "resolved",
+        "title": "未佩戴安全帽警告",
+        "description": "检测到人员未佩戴安全帽",
+        "created_at": "2024-01-15 10:30:00"
+      }
+    ],
+    "total_count": 1,
+    "export_type": "warnings"
+  }
+}
+```

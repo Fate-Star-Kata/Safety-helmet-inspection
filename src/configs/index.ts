@@ -114,6 +114,7 @@ export const adminMenuItems: AdminHeader[] = [
     title: '系统设置',
     icon: 'Setting',
     path: '/admin/settings',
+    hide: true
   },
 ]
 

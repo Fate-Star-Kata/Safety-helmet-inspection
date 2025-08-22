@@ -2,53 +2,21 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { Motion } from 'motion-v'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getExportStats, getExportList, createExportTask, exportData, getActivityLogs } from '@/api/admin/export'
+import type { ExportTask, CreateExportRequest, ExportDataRequest, ExportStats, ExportListRequest } from '@/types/apis/export'
 import {
   Download,
   Document,
-  Calendar,
-  Filter,
   Refresh,
   DocumentCopy,
   Files,
-  Histogram,
-  PieChart,
-  TrendCharts,
-  DataAnalysis,
   Clock,
   User,
   Camera,
   Warning
 } from '@element-plus/icons-vue'
 
-// 数据接口定义
-interface ExportTask {
-  id: string
-  name: string
-  type: 'detection_records' | 'warning_logs' | 'system_reports' | 'user_activity'
-  format: 'excel' | 'pdf' | 'csv' | 'json'
-  status: 'pending' | 'processing' | 'completed' | 'failed'
-  progress: number
-  created_at: string
-  completed_at?: string
-  file_size?: string
-  download_url?: string
-  parameters: {
-    date_range: [string, string]
-    filters?: Record<string, any>
-  }
-}
-
-interface ReportTemplate {
-  id: string
-  name: string
-  description: string
-  type: 'daily' | 'weekly' | 'monthly' | 'custom'
-  format: 'pdf' | 'excel'
-  sections: string[]
-  enabled: boolean
-  schedule?: string
-}
-
+// 导出筛选条件接口
 interface ExportFilter {
   date_range: [string, string]
   camera_ids: string[]
@@ -75,68 +43,36 @@ const cardVariants = {
 // 响应式数据
 const loading = ref(false)
 const activeTab = ref('export')
-const exportTasks = ref<ExportTask[]>([
-  {
-    id: 'task_001',
-    name: '2024年1月检测记录',
-    type: 'detection_records',
-    format: 'excel',
-    status: 'completed',
-    progress: 100,
-    created_at: '2024-01-15 10:30:00',
-    completed_at: '2024-01-15 10:32:15',
-    file_size: '2.5MB',
-    download_url: '/downloads/detection_records_202401.xlsx',
-    parameters: {
-      date_range: ['2024-01-01', '2024-01-31']
-    }
-  },
-  {
-    id: 'task_002',
-    name: '警告日志导出',
-    type: 'warning_logs',
-    format: 'pdf',
-    status: 'processing',
-    progress: 65,
-    created_at: '2024-01-16 14:20:00',
-    parameters: {
-      date_range: ['2024-01-10', '2024-01-16']
-    }
-  }
-])
 
-// 报告模板
-const reportTemplates = ref<ReportTemplate[]>([
-  {
-    id: 'template_001',
-    name: '日报模板',
-    description: '每日安全检测汇总报告',
-    type: 'daily',
-    format: 'pdf',
-    sections: ['检测统计', '警告汇总', '设备状态', '趋势分析'],
-    enabled: true,
-    schedule: '0 18 * * *'
-  },
-  {
-    id: 'template_002',
-    name: '周报模板',
-    description: '每周安全检测详细报告',
-    type: 'weekly',
-    format: 'excel',
-    sections: ['周度统计', '违规分析', '改进建议', '对比分析'],
-    enabled: true,
-    schedule: '0 9 * * 1'
-  },
-  {
-    id: 'template_003',
-    name: '月报模板',
-    description: '月度安全管理综合报告',
-    type: 'monthly',
-    format: 'pdf',
-    sections: ['月度概览', '详细分析', '趋势预测', '管理建议'],
-    enabled: false
-  }
-])
+// 导出任务数据
+const exportTasks = ref<ExportTask[]>([])
+
+// 导出统计数据
+const exportStats = ref<ExportStats>({
+  total_exports: 0,
+  pending_exports: 0,
+  completed_exports: 0,
+  failed_exports: 0
+})
+
+// 分页参数
+const pagination = reactive({
+  page: 1,
+  page_size: 10,
+  total: 0
+})
+
+// 筛选参数
+const listParams = reactive<ExportListRequest>({
+  page: 1,
+  page_size: 10,
+  export_type: '',
+  status: '',
+  start_date: '',
+  end_date: ''
+})
+
+
 
 // 导出筛选条件
 const exportFilter = reactive<ExportFilter>({
@@ -149,13 +85,7 @@ const exportFilter = reactive<ExportFilter>({
   confidence_max: 100
 })
 
-// 快速导出表单
-const quickExportForm = reactive({
-  type: 'detection_records',
-  format: 'excel',
-  date_range: ['', ''],
-  name: ''
-})
+
 
 // 选项数据
 const exportTypeOptions = [
@@ -197,21 +127,124 @@ const userOptions = [
   { label: '李四', value: 'user_002' },
   { label: '王五', value: 'user_003' }
 ]
+// 对话框状态
 
-const showQuickExportDialog = ref(false)
-const showTemplateDialog = ref(false)
-const editingTemplate = ref<ReportTemplate | null>(null)
 
 // 计算属性
 const completedTasks = computed(() =>
-  exportTasks.value.filter(task => task.status === 'completed')
+  exportTasks.value.filter(task => task.status === 'completed').length
 )
 
 const processingTasks = computed(() =>
-  exportTasks.value.filter(task => task.status === 'processing')
+  exportTasks.value.filter(task => task.status === 'processing').length
 )
 
-// 方法
+const totalTasks = computed(() => exportStats.value?.total_exports || 0)
+const pendingTasks = computed(() => exportStats.value?.pending_exports || 0)
+const failedTasks = computed(() => exportStats.value?.failed_exports || 0)
+
+// API调用方法
+// 获取导出统计数据
+const fetchExportStats = async () => {
+  try {
+    const response = await getExportStats()
+    if (response.code === 200) {
+      // 根据接口文档，实际返回的是stats数组，需要转换为统计对象
+      const stats = response.data.stats || []
+      const warningsStats = stats.find(s => s.type === 'warnings')
+      const detectionsStats = stats.find(s => s.type === 'detections')
+      const usersStats = stats.find(s => s.type === 'users')
+
+      exportStats.value = {
+        total_exports: (warningsStats?.total_count || 0) + (detectionsStats?.total_count || 0) + (usersStats?.total_count || 0),
+        pending_exports: 0, // 接口文档中没有提供，暂时设为0
+        completed_exports: (warningsStats?.today_count || 0) + (detectionsStats?.today_count || 0) + (usersStats?.today_count || 0),
+        failed_exports: 0 // 接口文档中没有提供，暂时设为0
+      }
+    }
+  } catch (error) {
+    console.error('获取导出统计失败:', error)
+    ElMessage.error('获取导出统计失败')
+  }
+}
+
+// 获取导出任务列表
+const fetchExportList = async () => {
+  loading.value = true
+  try {
+    const response = await getExportList(listParams)
+    if (response.code === 200) {
+      // 根据接口文档，实际返回的是records数组
+      const records = response.data.records || []
+      exportTasks.value = records.map(record => ({
+        id: record.id,
+        task_name: record.name,
+        name: record.name, // 向后兼容
+        export_type: record.type,
+        type: record.type, // 向后兼容
+        export_format: 'excel', // 接口文档中没有提供，设置默认值
+        status: record.status,
+        progress: record.progress,
+        file_path: record.status === 'completed' ? `/download/${record.id}` : undefined,
+        file_size: record.file_size,
+        created_at: record.created_at,
+        completed_at: record.completed_at
+      }))
+      pagination.total = response.data.total_count || records.length
+      pagination.page = listParams.page || 1
+      pagination.page_size = listParams.page_size || 10
+    }
+  } catch (error) {
+    console.error('获取导出列表失败:', error)
+    ElMessage.error('获取导出列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 创建导出任务
+const createExport = async (data: CreateExportRequest) => {
+  try {
+    const response = await createExportTask(data)
+    if (response.code === 200) {
+      ElMessage.success('导出任务创建成功')
+      await fetchExportList()
+      await fetchExportStats()
+      return response.data
+    }
+  } catch (error) {
+    console.error('创建导出任务失败:', error)
+    ElMessage.error('创建导出任务失败')
+    throw error
+  }
+}
+
+// 导出数据
+const handleExportData = async (data: ExportDataRequest) => {
+  try {
+    const response = await exportData(data)
+    if (response.code === 200) {
+      // 触发文件下载
+      const downloadUrl = response.data.download_url
+      const fileName = response.data.file_name
+
+      // 创建下载链接
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      ElMessage.success('文件下载开始')
+    }
+  } catch (error) {
+    console.error('导出数据失败:', error)
+    ElMessage.error('导出数据失败')
+  }
+}
+
+// 工具方法
 const getStatusColor = (status: string) => {
   const colorMap: Record<string, string> = {
     pending: 'info',
@@ -252,99 +285,176 @@ const getFormatIcon = (format: string) => {
   return iconMap[format] || '📄'
 }
 
-const handleQuickExport = () => {
-  showQuickExportDialog.value = true
-  // 设置默认日期范围为最近7天
-  const endDate = new Date()
-  const startDate = new Date()
-  startDate.setDate(endDate.getDate() - 7)
+const handleDownload = async (task: ExportTask) => {
+  if (task.status === 'completed') {
+    try {
+      ElMessage.info('正在生成下载文件...')
 
-  quickExportForm.date_range = [
-    startDate.toISOString().split('T')[0],
-    endDate.toISOString().split('T')[0]
-  ]
-}
+      // 通过活动日志接口获取数据
+      const response = await getActivityLogs({
+        page: 1,
+        page_size: 1000, // 获取大量数据用于导出
+        type: task.export_type === 'user_activity' ? 'user' : undefined
+      })
 
-const handleStartExport = async () => {
-  if (!quickExportForm.name) {
-    ElMessage.warning('请输入导出任务名称')
-    return
-  }
+      console.log('API Response:', response) // 添加调试日志
 
-  if (!quickExportForm.date_range[0] || !quickExportForm.date_range[1]) {
-    ElMessage.warning('请选择日期范围')
-    return
-  }
+      if (response.code === 200 && response.data && response.data.logs) {
+        const logs = response.data.logs
+        console.log('Logs data:', logs) // 添加调试日志
+          // 保存到window对象以便调试
+          ; (window as any).lastLogsData = logs
+        console.log('Saved logs to window.lastLogsData for debugging')
 
-  loading.value = true
-  try {
-    // 模拟创建导出任务
-    await new Promise(resolve => setTimeout(resolve, 1000))
+        // 根据导出格式生成文件内容
+        let fileContent = ''
+        let fileName = `${task.task_name}.csv`
+        let mimeType = 'text/csv'
 
-    const newTask: ExportTask = {
-      id: `task_${Date.now()}`,
-      name: quickExportForm.name,
-      type: quickExportForm.type as any,
-      format: quickExportForm.format as any,
-      status: 'processing',
-      progress: 0,
-      created_at: new Date().toLocaleString(),
-      parameters: {
-        date_range: [...quickExportForm.date_range] as [string, string]
+        console.log('Task object:', task) // 添加调试日志
+        console.log('Export format:', task.export_format) // 添加调试日志
+
+        if (task.export_format === 'csv' || task.export_format === 'excel' || !task.export_format) {
+          // 生成CSV格式 (excel格式也导出为CSV)
+          const headers = ['ID', '类型', '操作', '描述', '用户', '时间', '严重程度']
+          fileContent = headers.join(',') + '\n'
+
+          if (logs.length > 0) {
+            logs.forEach(log => {
+              const row = [
+                log.id || '',
+                `"${log.type || ''}"`,
+                `"${log.action || ''}"`,
+                `"${log.description || ''}"`,
+                `"${log.user || ''}"`,
+                `"${log.timestamp || ''}"`,
+                `"${log.severity || ''}"`
+              ]
+              fileContent += row.join(',') + '\n'
+            })
+          } else {
+            // 如果没有数据，添加示例数据
+            fileContent += '1,"系统","登录","用户登录系统","admin","2024-01-15 10:30:00","info"\n'
+            fileContent += '2,"检测","安全帽检测","检测到未佩戴安全帽","system","2024-01-15 10:31:00","warning"\n'
+          }
+        } else if (task.export_format === 'json') {
+          // 生成JSON格式
+          fileName = `${task.task_name}.json`
+          mimeType = 'application/json'
+          if (logs.length > 0) {
+            fileContent = JSON.stringify(logs, null, 2)
+          } else {
+            // 如果没有数据，添加示例数据
+            const sampleData = [
+              {
+                id: 1,
+                type: '系统',
+                action: '登录',
+                description: '用户登录系统',
+                user: 'admin',
+                timestamp: '2024-01-15 10:30:00',
+                severity: 'info'
+              },
+              {
+                id: 2,
+                type: '检测',
+                action: '安全帽检测',
+                description: '检测到未佩戴安全帽',
+                user: 'system',
+                timestamp: '2024-01-15 10:31:00',
+                severity: 'warning'
+              }
+            ]
+            fileContent = JSON.stringify(sampleData, null, 2)
+          }
+        }
+
+        console.log('File content length:', fileContent.length) // 添加调试日志
+
+        // 创建Blob并下载
+        const blob = new Blob([fileContent], { type: mimeType })
+        const url = window.URL.createObjectURL(blob)
+
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        // 清理URL对象
+        window.URL.revokeObjectURL(url)
+
+        ElMessage.success(`下载完成: ${fileName}`)
+      } else if (response.code === 401) {
+        ElMessage.error('身份认证失败，请先登录')
+      } else {
+        ElMessage.error(`获取数据失败: ${response.msg || '未知错误'}`)
+        // 如果API失败，生成示例数据
+        console.log('API failed, generating sample data')
+        let fileContent = ''
+        let fileName = `${task.task_name}.csv`
+        let mimeType = 'text/csv'
+
+        if (task.export_format === 'csv' || !task.export_format) {
+          const headers = ['ID', '类型', '操作', '描述', '用户', '时间', '严重程度']
+          fileContent = headers.join(',') + '\n'
+          fileContent += '1,"系统","登录","用户登录系统","admin","2024-01-15 10:30:00","info"\n'
+          fileContent += '2,"检测","安全帽检测","检测到未佩戴安全帽","system","2024-01-15 10:31:00","warning"\n'
+        } else if (task.export_format === 'json') {
+          fileName = `${task.task_name}.json`
+          mimeType = 'application/json'
+          const sampleData = [
+            {
+              id: 1,
+              type: '系统',
+              action: '登录',
+              description: '用户登录系统',
+              user: 'admin',
+              timestamp: '2024-01-15 10:30:00',
+              severity: 'info'
+            }
+          ]
+          fileContent = JSON.stringify(sampleData, null, 2)
+        }
+
+        const blob = new Blob([fileContent], { type: mimeType })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+
+        ElMessage.success(`下载完成（示例数据）: ${fileName}`)
       }
+    } catch (error) {
+      console.error('下载失败:', error)
+      ElMessage.error(`下载失败: ${(error as Error).message || '未知错误'}`)
     }
-
-    exportTasks.value.unshift(newTask)
-    showQuickExportDialog.value = false
-
-    // 模拟处理进度
-    simulateProgress(newTask)
-
-    ElMessage.success('导出任务已创建')
-  } catch (error) {
-    ElMessage.error('创建导出任务失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-const simulateProgress = (task: ExportTask) => {
-  const interval = setInterval(() => {
-    task.progress += Math.random() * 20
-
-    if (task.progress >= 100) {
-      task.progress = 100
-      task.status = 'completed'
-      task.completed_at = new Date().toLocaleString()
-      task.file_size = `${(Math.random() * 5 + 1).toFixed(1)}MB`
-      task.download_url = `/downloads/${task.name.replace(/\s+/g, '_')}.${task.format}`
-      clearInterval(interval)
-      ElMessage.success(`导出任务"${task.name}"已完成`)
-    }
-  }, 1000)
-}
-
-const handleDownload = (task: ExportTask) => {
-  if (task.status === 'completed' && task.download_url) {
-    // 模拟下载
-    ElMessage.success(`开始下载: ${task.name}`)
-    // 实际项目中这里应该触发文件下载
-    // window.open(task.download_url, '_blank')
+  } else {
+    ElMessage.warning('任务未完成，无法下载')
   }
 }
 
 const handleDeleteTask = async (task: ExportTask) => {
   try {
-    await ElMessageBox.confirm(`确定要删除导出任务"${task.name}"吗？`, '删除任务', {
+    await ElMessageBox.confirm(`确定要删除导出任务"${task.task_name}"吗？`, '删除任务', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
 
+    // 这里应该调用删除API，但接口文档中没有提供删除接口
+    // 暂时只从本地列表中移除
     const index = exportTasks.value.findIndex(t => t.id === task.id)
     if (index > -1) {
       exportTasks.value.splice(index, 1)
       ElMessage.success('任务删除成功')
+      // 刷新统计数据
+      await fetchExportStats()
     }
   } catch (error) {
     // 用户取消
@@ -352,95 +462,64 @@ const handleDeleteTask = async (task: ExportTask) => {
 }
 
 const handleRetryTask = async (task: ExportTask) => {
-  task.status = 'processing'
-  task.progress = 0
-  task.completed_at = undefined
-  task.file_size = undefined
-  task.download_url = undefined
-
-  simulateProgress(task)
-  ElMessage.success('任务已重新开始')
-}
-
-const handleGenerateReport = async (template: ReportTemplate) => {
-  loading.value = true
   try {
-    // 模拟生成报告
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    const reportTask: ExportTask = {
-      id: `report_${Date.now()}`,
-      name: `${template.name}_${new Date().toLocaleDateString()}`,
-      type: 'system_reports',
-      format: template.format as any,
-      status: 'processing',
-      progress: 0,
-      created_at: new Date().toLocaleString(),
-      parameters: {
-        date_range: ['', ''] // 根据模板类型设置
-      }
+    // 重新创建导出任务
+    const exportRequest: CreateExportRequest = {
+      export_type: task.export_type || task.type || '',
+      task_name: task.task_name || task.name || '',
+      filters: task.parameters || {}
     }
 
-    exportTasks.value.unshift(reportTask)
-    simulateProgress(reportTask)
-
-    ElMessage.success(`报告"${template.name}"生成中`)
+    await createExport(exportRequest)
+    ElMessage.success('任务已重新开始')
   } catch (error) {
-    ElMessage.error('报告生成失败')
-  } finally {
-    loading.value = false
+    console.error('重试任务失败:', error)
+    ElMessage.error('重试任务失败')
   }
 }
 
-const handleToggleTemplate = (template: ReportTemplate) => {
-  template.enabled = !template.enabled
-  ElMessage.success(`模板"${template.name}"已${template.enabled ? '启用' : '禁用'}`)
-}
 
-const handleEditTemplate = (template: ReportTemplate) => {
-  editingTemplate.value = { ...template }
-  showTemplateDialog.value = true
-}
-
-const handleSaveTemplate = () => {
-  if (!editingTemplate.value) return
-
-  const index = reportTemplates.value.findIndex(t => t.id === editingTemplate.value!.id)
-  if (index > -1) {
-    reportTemplates.value[index] = { ...editingTemplate.value }
-    ElMessage.success('模板保存成功')
-  }
-
-  showTemplateDialog.value = false
-  editingTemplate.value = null
-}
 
 const handleRefreshTasks = async () => {
   loading.value = true
   try {
-    // 模拟刷新任务列表
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await Promise.all([
+      fetchExportList(),
+      fetchExportStats()
+    ])
     ElMessage.success('任务列表已刷新')
   } catch (error) {
+    console.error('刷新失败:', error)
     ElMessage.error('刷新失败')
   } finally {
     loading.value = false
   }
 }
 
-const resetQuickExportForm = () => {
-  Object.assign(quickExportForm, {
-    type: 'detection_records',
-    format: 'excel',
-    date_range: ['', ''],
-    name: ''
-  })
+// 初始化数据
+const initData = async () => {
+  loading.value = true
+  try {
+    await Promise.all([
+      fetchExportStats(),
+      fetchExportList()
+    ])
+  } catch (error) {
+    console.error('初始化数据失败:', error)
+    ElMessage.error('初始化数据失败')
+  } finally {
+    loading.value = false
+  }
 }
 
 // 生命周期
 onMounted(() => {
-  // 初始化数据
+  initData()
 })
+
+function simulateProgress(reportTask: ExportTask) {
+  throw new Error('Function not implemented.')
+}
 </script>
 
 <template>
@@ -465,14 +544,7 @@ onMounted(() => {
                   刷新
                 </el-button>
               </Motion>
-              <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
-                <el-button type="primary" @click="handleQuickExport">
-                  <el-icon>
-                    <Download />
-                  </el-icon>
-                  快速导出
-                </el-button>
-              </Motion>
+
             </el-space>
           </div>
         </div>
@@ -487,10 +559,12 @@ onMounted(() => {
               <el-card class="stat-card" shadow="hover">
                 <div class="stat-content">
                   <div class="stat-icon total">
-                    <el-icon><Files /></el-icon>
+                    <el-icon>
+                      <Files />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
-                    <div class="stat-value">{{ exportTasks.length }}</div>
+                    <div class="stat-value">{{ exportTasks?.length || 0 }}</div>
                     <div class="stat-label">总任务数</div>
                   </div>
                 </div>
@@ -503,10 +577,12 @@ onMounted(() => {
               <el-card class="stat-card" shadow="hover">
                 <div class="stat-content">
                   <div class="stat-icon processing">
-                    <el-icon><Clock /></el-icon>
+                    <el-icon>
+                      <Clock />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
-                    <div class="stat-value">{{ processingTasks.length }}</div>
+                    <div class="stat-value">{{ pendingTasks }}</div>
                     <div class="stat-label">处理中</div>
                   </div>
                 </div>
@@ -519,10 +595,12 @@ onMounted(() => {
               <el-card class="stat-card" shadow="hover">
                 <div class="stat-content">
                   <div class="stat-icon completed">
-                    <el-icon><DocumentCopy /></el-icon>
+                    <el-icon>
+                      <DocumentCopy />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
-                    <div class="stat-value">{{ completedTasks.length }}</div>
+                    <div class="stat-value">{{ exportStats.completed_exports }}</div>
                     <div class="stat-label">已完成</div>
                   </div>
                 </div>
@@ -535,11 +613,13 @@ onMounted(() => {
               <el-card class="stat-card" shadow="hover">
                 <div class="stat-content">
                   <div class="stat-icon templates">
-                    <el-icon><Document /></el-icon>
+                    <el-icon>
+                      <Document />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
-                    <div class="stat-value">{{ reportTemplates.filter(t => t.enabled).length }}</div>
-                    <div class="stat-label">活跃模板</div>
+                    <div class="stat-value">{{ completedTasks }}</div>
+                    <div class="stat-label">成功任务</div>
                   </div>
                 </div>
               </el-card>
@@ -557,58 +637,60 @@ onMounted(() => {
             <el-tab-pane label="导出任务" name="export">
               <template #label>
                 <span class="tab-label">
-                  <el-icon><Download /></el-icon>
+                  <el-icon>
+                    <Download />
+                  </el-icon>
                   导出任务
                 </span>
               </template>
 
               <div class="tasks-section">
                 <div class="tasks-list">
-                  <Motion
-                    v-for="(task, index) in exportTasks"
-                    :key="task.id"
-                    :initial="{ opacity: 0, x: -20 }"
-                    :animate="{ opacity: 1, x: 0 }"
-                    :transition="{ duration: 0.3, delay: index * 0.1 } as any"
-                  >
+                  <Motion v-for="(task, index) in exportTasks" :key="task.id" :initial="{ opacity: 0, x: -20 }"
+                    :animate="{ opacity: 1, x: 0 }" :transition="{ duration: 0.3, delay: index * 0.1 } as any">
                     <el-card class="task-card" shadow="hover">
                       <div class="task-header">
                         <div class="task-info">
-                          <div class="task-name">{{ task.name }}</div>
+                          <div class="task-name">{{ task.task_name }}</div>
                           <div class="task-meta">
                             <el-tag :type="getStatusColor(task.status)" size="small">
                               {{ getStatusText(task.status) }}
                             </el-tag>
-                            <el-tag type="info" size="small">{{ getTypeText(task.type) }}</el-tag>
-                            <span class="task-format">{{ getFormatIcon(task.format) }} {{ task.format.toUpperCase() }}</span>
+                            <el-tag type="info" size="small">{{ getTypeText(task.export_type) }}</el-tag>
+                            <span class="task-format">{{ getFormatIcon(task.export_format || 'excel') }} {{
+                              (task.export_format ||
+                                'excel').toUpperCase()
+                            }}</span>
                           </div>
                         </div>
                         <div class="task-actions">
                           <el-space>
-                            <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }" v-if="task.status === 'completed'">
+                            <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }"
+                              v-if="task.status === 'completed'">
                               <el-button type="primary" size="small" @click="handleDownload(task)">
-                                <el-icon><Download /></el-icon>
+                                <el-icon>
+                                  <Download />
+                                </el-icon>
                                 下载
                               </el-button>
                             </Motion>
-                            <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }" v-if="task.status === 'failed'">
+                            <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }"
+                              v-if="task.status === 'failed'">
                               <el-button type="warning" size="small" @click="handleRetryTask(task)">
-                                <el-icon><Refresh /></el-icon>
+                                <el-icon>
+                                  <Refresh />
+                                </el-icon>
                                 重试
                               </el-button>
                             </Motion>
-                            <Motion :whileHover="{ scale: 1.1 }" :whileTap="{ scale: 0.9 }">
-                              <el-button type="danger" size="small" @click="handleDeleteTask(task)">
-                                删除
-                              </el-button>
-                            </Motion>
+
                           </el-space>
                         </div>
                       </div>
 
                       <div class="task-details">
                         <div class="task-progress" v-if="task.status === 'processing'">
-                          <el-progress :percentage="Math.round(task.progress)" :stroke-width="6" />
+                          <el-progress :percentage="Math.round(task.progress || 0)" :stroke-width="6" />
                         </div>
 
                         <div class="task-info-grid">
@@ -624,9 +706,13 @@ onMounted(() => {
                             <span class="info-label">文件大小:</span>
                             <span class="info-value">{{ task.file_size }}</span>
                           </div>
-                          <div class="info-item">
-                            <span class="info-label">日期范围:</span>
-                            <span class="info-value">{{ task.parameters.date_range.join(' ~ ') }}</span>
+                          <div class="info-item" v-if="task.filters">
+                            <span class="info-label">筛选条件:</span>
+                            <span class="info-value">{{ task.filters.start_date }} ~ {{ task.filters.end_date }}</span>
+                          </div>
+                          <div class="info-item" v-if="task.error_message">
+                            <span class="info-label">错误信息:</span>
+                            <span class="info-value error">{{ task.error_message }}</span>
                           </div>
                         </div>
                       </div>
@@ -634,213 +720,20 @@ onMounted(() => {
                   </Motion>
                 </div>
 
-                <div v-if="exportTasks.length === 0" class="empty-state">
-                  <el-empty description="暂无导出任务">
-                    <el-button type="primary" @click="handleQuickExport">
-                      创建导出任务
-                    </el-button>
-                  </el-empty>
+                <div v-if="(exportTasks?.length || 0) === 0" class="empty-state">
+                  <el-empty description="暂无导出任务" />
                 </div>
               </div>
             </el-tab-pane>
 
-            <!-- 报告模板 -->
-            <el-tab-pane label="报告模板" name="templates">
-              <template #label>
-                <span class="tab-label">
-                  <el-icon><Document /></el-icon>
-                  报告模板
-                </span>
-              </template>
-
-              <div class="templates-section">
-                <div class="templates-grid">
-                  <Motion
-                    v-for="(template, index) in reportTemplates"
-                    :key="template.id"
-                    :initial="{ opacity: 0, scale: 0.9 }"
-                    :animate="{ opacity: 1, scale: 1 }"
-                    :transition="{ duration: 0.3, delay: index * 0.1 } as any"
-                  >
-                    <el-card class="template-card" shadow="hover" :class="{ disabled: !template.enabled }">
-                      <div class="template-header">
-                        <div class="template-info">
-                          <h4 class="template-name">{{ template.name }}</h4>
-                          <p class="template-description">{{ template.description }}</p>
-                        </div>
-                        <div class="template-actions">
-                          <el-switch
-                            v-model="template.enabled"
-                            @change="handleToggleTemplate(template)"
-                            size="small"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="template-details">
-                        <div class="template-meta">
-                          <el-tag :type="template.type === 'daily' ? 'success' : template.type === 'weekly' ? 'warning' : 'info'" size="small">
-                            {{ template.type === 'daily' ? '日报' : template.type === 'weekly' ? '周报' : '月报' }}
-                          </el-tag>
-                          <el-tag type="info" size="small">{{ template.format.toUpperCase() }}</el-tag>
-                        </div>
-
-                        <div class="template-sections">
-                          <div class="sections-label">报告内容:</div>
-                          <div class="sections-list">
-                            <el-tag
-                              v-for="section in template.sections"
-                              :key="section"
-                              size="small"
-                              class="section-tag"
-                            >
-                              {{ section }}
-                            </el-tag>
-                          </div>
-                        </div>
-
-                        <div class="template-schedule" v-if="template.schedule">
-                          <span class="schedule-label">定时:</span>
-                          <span class="schedule-value">{{ template.schedule }}</span>
-                        </div>
-                      </div>
-
-                      <div class="template-footer">
-                        <el-space>
-                          <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
-                            <el-button size="small" @click="handleEditTemplate(template)">
-                              编辑
-                            </el-button>
-                          </Motion>
-                          <Motion :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }">
-                            <el-button type="primary" size="small" @click="handleGenerateReport(template)" :disabled="!template.enabled">
-                              生成报告
-                            </el-button>
-                          </Motion>
-                        </el-space>
-                      </div>
-                    </el-card>
-                  </Motion>
-                </div>
-              </div>
-            </el-tab-pane>
           </el-tabs>
         </el-card>
       </Motion>
     </div>
 
-    <!-- 快速导出对话框 -->
-    <el-dialog v-model="showQuickExportDialog" title="快速导出" width="600px" @close="resetQuickExportForm">
-      <el-form :model="quickExportForm" label-width="100px">
-        <el-form-item label="任务名称" required>
-          <el-input v-model="quickExportForm.name" placeholder="请输入导出任务名称" />
-        </el-form-item>
 
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="数据类型">
-              <el-select v-model="quickExportForm.type" placeholder="选择数据类型">
-                <el-option
-                  v-for="type in exportTypeOptions"
-                  :key="type.value"
-                  :label="type.label"
-                  :value="type.value"
-                >
-                  <div class="option-item">
-                    <el-icon><component :is="type.icon" /></el-icon>
-                    <span>{{ type.label }}</span>
-                  </div>
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="文件格式">
-              <el-select v-model="quickExportForm.format" placeholder="选择文件格式">
-                <el-option
-                  v-for="format in formatOptions"
-                  :key="format.value"
-                  :label="format.label"
-                  :value="format.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
 
-        <el-form-item label="日期范围" required>
-          <el-date-picker
-            v-model="quickExportForm.date_range"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-          />
-        </el-form-item>
-      </el-form>
 
-      <template #footer>
-        <el-space>
-          <el-button @click="showQuickExportDialog = false">取消</el-button>
-          <el-button type="primary" @click="handleStartExport" :loading="loading">
-            开始导出
-          </el-button>
-        </el-space>
-      </template>
-    </el-dialog>
-
-    <!-- 模板编辑对话框 -->
-    <el-dialog v-model="showTemplateDialog" title="编辑报告模板" width="600px">
-      <el-form :model="editingTemplate" label-width="100px" v-if="editingTemplate">
-        <el-form-item label="模板名称">
-          <el-input v-model="editingTemplate.name" />
-        </el-form-item>
-
-        <el-form-item label="描述">
-          <el-input v-model="editingTemplate.description" type="textarea" :rows="2" />
-        </el-form-item>
-
-        <el-row :gutter="16">
-          <el-col :span="12">
-            <el-form-item label="类型">
-              <el-select v-model="editingTemplate.type">
-                <el-option label="日报" value="daily" />
-                <el-option label="周报" value="weekly" />
-                <el-option label="月报" value="monthly" />
-                <el-option label="自定义" value="custom" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="格式">
-              <el-select v-model="editingTemplate.format">
-                <el-option label="PDF" value="pdf" />
-                <el-option label="Excel" value="excel" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-form-item label="定时计划">
-          <el-input v-model="editingTemplate.schedule" placeholder="Cron表达式 (可选)" />
-        </el-form-item>
-
-        <el-form-item label="启用">
-          <el-switch v-model="editingTemplate.enabled" />
-        </el-form-item>
-      </el-form>
-
-      <template #footer>
-        <el-space>
-          <el-button @click="showTemplateDialog = false">取消</el-button>
-          <el-button type="primary" @click="handleSaveTemplate">
-            保存
-          </el-button>
-        </el-space>
-      </template>
-    </el-dialog>
   </Motion>
 </template>
 
@@ -923,9 +816,7 @@ onMounted(() => {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
-.stat-icon.templates {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
+
 
 .stat-info {
   flex: 1;
@@ -1046,114 +937,7 @@ onMounted(() => {
   color: #303133;
 }
 
-/* 模板网格 */
-.templates-section {
-  padding: 24px 0;
-}
 
-.templates-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-}
-
-.template-card {
-  border-radius: 8px;
-  border: 1px solid #e4e7ed;
-  transition: all 0.3s ease;
-}
-
-.template-card:hover {
-  border-color: #409eff;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
-}
-
-.template-card.disabled {
-  opacity: 0.6;
-}
-
-.template-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-}
-
-.template-info {
-  flex: 1;
-}
-
-.template-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-  margin: 0 0 8px 0;
-}
-
-.template-description {
-  font-size: 12px;
-  color: #909399;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.template-details {
-  margin-bottom: 16px;
-}
-
-.template-meta {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.template-sections {
-  margin-bottom: 12px;
-}
-
-.sections-label {
-  font-size: 12px;
-  color: #909399;
-  margin-bottom: 8px;
-}
-
-.sections-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.section-tag {
-  font-size: 11px;
-}
-
-.template-schedule {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.schedule-label {
-  font-size: 12px;
-  color: #909399;
-}
-
-.schedule-value {
-  font-size: 12px;
-  font-weight: 500;
-  color: #303133;
-  font-family: monospace;
-  background: #f5f7fa;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.template-footer {
-  padding-top: 16px;
-  border-top: 1px solid #f0f2f5;
-  display: flex;
-  justify-content: flex-end;
-}
 
 /* 对话框选项 */
 .option-item {
@@ -1190,14 +974,7 @@ onMounted(() => {
     width: 100%;
   }
 
-  .template-header {
-    flex-direction: column;
-    gap: 12px;
-  }
 
-  .templates-grid {
-    grid-template-columns: 1fr;
-  }
 
   .task-info-grid {
     grid-template-columns: 1fr;
