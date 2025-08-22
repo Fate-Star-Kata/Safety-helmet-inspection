@@ -16,11 +16,8 @@
           <label class="label">
             <span class="label-text font-medium text-gray-700">开始日期</span>
           </label>
-          <input 
-            type="date" 
-            v-model="filters.startDate"
-            class="input input-bordered bg-white border-gray-300 focus:border-slate-500"
-          />
+          <input type="date" v-model="filters.startDate"
+            class="input input-bordered bg-white border-gray-300 focus:border-slate-500" />
         </div>
 
         <!-- 结束日期 -->
@@ -28,11 +25,8 @@
           <label class="label">
             <span class="label-text font-medium text-gray-700">结束日期</span>
           </label>
-          <input 
-            type="date" 
-            v-model="filters.endDate"
-            class="input input-bordered bg-white border-gray-300 focus:border-slate-500"
-          />
+          <input type="date" v-model="filters.endDate"
+            class="input input-bordered bg-white border-gray-300 focus:border-slate-500" />
         </div>
 
         <!-- 警告级别 -->
@@ -40,10 +34,8 @@
           <label class="label">
             <span class="label-text font-medium text-gray-700">警告级别</span>
           </label>
-          <select 
-            v-model="filters.level"
-            class="select select-bordered bg-white border-gray-300 focus:border-slate-500"
-          >
+          <select v-model="filters.level"
+            class="select select-bordered bg-white border-gray-300 focus:border-slate-500">
             <option value="">全部级别</option>
             <option value="严重警告">严重警告</option>
             <option value="一般警告">一般警告</option>
@@ -56,10 +48,8 @@
           <label class="label">
             <span class="label-text font-medium text-gray-700">摄像头</span>
           </label>
-          <select 
-            v-model="filters.camera"
-            class="select select-bordered bg-white border-gray-300 focus:border-slate-500"
-          >
+          <select v-model="filters.camera"
+            class="select select-bordered bg-white border-gray-300 focus:border-slate-500">
             <option value="">全部摄像头</option>
             <option v-for="camera in cameraOptions" :key="camera" :value="camera">
               {{ camera }}
@@ -69,10 +59,7 @@
 
         <!-- 筛选按钮 -->
         <div class="form-control">
-          <button 
-            @click="applyFilters"
-            class="btn bg-slate-700 hover:bg-slate-800 text-white border-0"
-          >
+          <button @click="applyFilters" class="btn bg-slate-700 hover:bg-slate-800 text-white border-0">
             筛选
           </button>
         </div>
@@ -89,7 +76,9 @@
           </div>
           <div class="p-3 bg-red-100 rounded-full">
             <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd" />
             </svg>
           </div>
         </div>
@@ -103,7 +92,9 @@
           </div>
           <div class="p-3 bg-yellow-100 rounded-full">
             <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clip-rule="evenodd" />
             </svg>
           </div>
         </div>
@@ -117,7 +108,9 @@
           </div>
           <div class="p-3 bg-blue-100 rounded-full">
             <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clip-rule="evenodd" />
             </svg>
           </div>
         </div>
@@ -131,7 +124,9 @@
           </div>
           <div class="p-3 bg-green-100 rounded-full">
             <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd" />
             </svg>
           </div>
         </div>
@@ -144,28 +139,16 @@
         <button class="btn btn-sm bg-slate-700 hover:bg-slate-800 text-white border-0">
           📋 批量操作
         </button>
-        <button 
-          @click="exportRecords"
-          class="btn btn-sm bg-orange-600 hover:bg-orange-700 text-white border-0"
-        >
+        <button @click="exportRecords" class="btn btn-sm bg-orange-600 hover:bg-orange-700 text-white border-0">
           📥 导出记录
         </button>
-        <button 
-          @click="markAsRead"
-          class="btn btn-sm bg-green-600 hover:bg-green-700 text-white border-0"
-        >
+        <button @click="markAsRead" class="btn btn-sm bg-green-600 hover:bg-green-700 text-white border-0">
           ✅ 标记已读
         </button>
-        <button 
-          @click="deleteSelected"
-          class="btn btn-sm bg-red-600 hover:bg-red-700 text-white border-0"
-        >
+        <button @click="deleteSelected" class="btn btn-sm bg-red-600 hover:bg-red-700 text-white border-0">
           🗑️ 删除选中
         </button>
-        <button 
-          @click="generateReport"
-          class="btn btn-sm bg-gray-600 hover:bg-gray-700 text-white border-0"
-        >
+        <button @click="generateReport" class="btn btn-sm bg-gray-600 hover:bg-gray-700 text-white border-0">
           📊 生成报告
         </button>
       </div>
@@ -176,48 +159,36 @@
       <div class="p-6 border-b border-gray-200">
         <h2 class="text-xl font-semibold text-gray-800">警告记录</h2>
       </div>
-      
+
       <div class="divide-y divide-gray-200">
-        <div 
-          v-for="record in paginatedRecords" 
-          :key="record.id"
-          class="p-6 hover:bg-gray-50 transition-colors"
-        >
+        <div v-for="record in paginatedRecords" :key="record.id" class="p-6 hover:bg-gray-50 transition-colors">
           <div class="flex items-start space-x-4">
             <!-- 选择框 -->
-            <input 
-              type="checkbox" 
-              v-model="selectedRecords"
-              :value="record.id"
-              class="checkbox mt-1"
-              style="--chkbg: rgb(51 65 85); --chkfg: white;"
-            />
-            
+            <input type="checkbox" v-model="selectedRecords" :value="record.id" class="checkbox mt-1"
+              style="--chkbg: rgb(51 65 85); --chkfg: white;" />
+
             <!-- 警告图标 -->
             <div class="flex-shrink-0 mt-1">
               <span class="text-2xl" :class="getLevelColorClass(record.level)">
                 {{ getWarningIcon(record.level) }}
               </span>
             </div>
-            
+
             <!-- 警告内容 -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between mb-2">
-                <h3 
-                  class="text-lg font-semibold"
-                  :class="{
+                <h3 class="text-lg font-semibold" :class="{
                     'text-red-600': record.level === '严重警告',
                     'text-yellow-600': record.level === '一般警告',
                     'text-blue-600': record.level === '提示信息'
-                  }"
-                >
+}">
                   {{ record.level }}
                 </h3>
                 <span class="text-sm text-gray-500">{{ formatDateTime(record.datetime) }}</span>
               </div>
-              
+
               <p class="text-gray-800 font-medium mb-2">{{ record.title }}</p>
-              
+
               <div class="text-sm text-gray-600 mb-3">
                 <span class="inline-flex items-center mr-4">
                   📍 位置：{{ record.location }}
@@ -229,15 +200,15 @@
                   🎯 置信度：{{ record.confidence }}%
                 </span>
               </div>
-              
+
               <p class="text-gray-700 mb-3">{{ record.description }}</p>
-              
+
               <div class="flex items-center justify-between">
                 <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                   {{ record.screenshotText }}
                 </button>
                 <div class="flex space-x-2">
-                  <button class="btn btn-xs btn-outline">
+                  <button @click="showDetail(record)" class="btn btn-xs btn-outline">
                     查看详情
                   </button>
                   <button class="btn btn-xs btn-primary">
@@ -249,7 +220,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 分页 -->
       <div class="p-6 border-t border-gray-200">
         <div class="flex items-center justify-between">
@@ -257,22 +228,124 @@
             显示第 {{ startIndex }} - {{ endIndex }} 条，共 {{ totalRecords }} 条记录
           </div>
           <div class="flex space-x-2">
-            <button 
-              @click="previousPage"
-              :disabled="currentPage === 1"
-              class="btn btn-sm btn-outline"
-            >
+            <button @click="previousPage" :disabled="currentPage === 1" class="btn btn-sm btn-outline">
               上一页
             </button>
             <span class="flex items-center px-3 text-sm text-gray-700">
               第 {{ currentPage }} / {{ totalPages }} 页
             </span>
-            <button 
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              class="btn btn-sm btn-outline"
-            >
+            <button @click="nextPage" :disabled="currentPage === totalPages" class="btn btn-sm btn-outline">
               下一页
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div v-if="showDetailModal" class="fixed inset-0 bg-[#00000080] bg-opacity-50 flex items-center justify-center z-50"
+      @click="closeDetail">
+      <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" @click.stop>
+        <!-- 弹窗头部 -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+          <h3 class="text-xl font-semibold text-gray-800">警告详情</h3>
+          <button @click="closeDetail" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 弹窗内容 -->
+        <div class="p-6" v-if="selectedRecord">
+          <!-- 基本信息 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="space-y-4">
+              <div class="flex items-center space-x-3">
+                <span class="text-2xl" :class="getLevelColorClass(selectedRecord.level)">
+                  {{ getWarningIcon(selectedRecord.level) }}
+                </span>
+                <div>
+                  <h4 class="text-lg font-semibold" :class="{
+                    'text-red-600': selectedRecord.level === '严重警告',
+                    'text-yellow-600': selectedRecord.level === '一般警告',
+                    'text-blue-600': selectedRecord.level === '提示信息'
+                  }">
+                    {{ selectedRecord.level }}
+                  </h4>
+                  <p class="text-sm text-gray-500">{{ formatDateTime(selectedRecord.datetime) }}</p>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm font-medium text-gray-600 w-20">摄像头:</span>
+                  <span class="text-sm text-gray-800">{{ selectedRecord.camera }}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm font-medium text-gray-600 w-20">位置:</span>
+                  <span class="text-sm text-gray-800">{{ selectedRecord.location }}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm font-medium text-gray-600 w-20">检测人数:</span>
+                  <span class="text-sm text-gray-800">{{ selectedRecord.personCount }}人</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm font-medium text-gray-600 w-20">置信度:</span>
+                  <span class="text-sm text-gray-800">{{ selectedRecord.confidence }}%</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm font-medium text-gray-600 w-20">处理状态:</span>
+                  <span class="text-sm px-2 py-1 rounded-full"
+                    :class="selectedRecord.processed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                    {{ selectedRecord.processed ? '已处理' : '未处理' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 截图区域 -->
+            <div class="space-y-4">
+              <h5 class="text-sm font-medium text-gray-600">警告截图</h5>
+              <div class="bg-gray-100 rounded-lg p-4 text-center">
+                <div class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <div class="text-center">
+                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                      </path>
+                    </svg>
+                    <p class="text-sm text-gray-500">{{ selectedRecord.screenshotText }}</p>
+                    <p class="text-xs text-gray-400 mt-1">点击查看大图</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 详细描述 -->
+          <div class="mb-6">
+            <h5 class="text-sm font-medium text-gray-600 mb-2">详细描述</h5>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <p class="text-sm text-gray-700 leading-relaxed">{{ selectedRecord.description }}</p>
+            </div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button @click="closeDetail" class="btn btn-outline">
+              关闭
+            </button>
+            <button v-if="!selectedRecord.processed" @click="markAsProcessed"
+              class="btn bg-green-600 hover:bg-green-700 text-white border-0">
+              标记为已处理
+            </button>
+            <button @click="downloadScreenshot" class="btn bg-blue-600 hover:bg-blue-700 text-white border-0">
+              下载截图
+            </button>
+            <button @click="generateDetailReport" class="btn bg-gray-600 hover:bg-gray-700 text-white border-0">
+              生成报告
             </button>
           </div>
         </div>
@@ -333,6 +406,8 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const allRecords = ref<WarningRecord[]>([])
 const filteredRecords = ref<WarningRecord[]>([])
+const showDetailModal = ref(false)
+const selectedRecord = ref<WarningRecord | null>(null)
 
 // 摄像头选项
 const cameraOptions = ref(['摄像头#1', '摄像头#2', '摄像头#3', '摄像头#4'])
@@ -361,18 +436,18 @@ const generateMockData = (): WarningRecord[] => {
     '一般警告': ['检测到可疑行为', '检测到人员聚集', '安全帽佩戴不规范'],
     '提示信息': ['检测正常', '系统运行正常', '安全状况良好']
   }
-  
+
   const records: WarningRecord[] = []
-  
+
   for (let i = 1; i <= 50; i++) {
     const level = levels[Math.floor(Math.random() * levels.length)]
     const camera = cameras[Math.floor(Math.random() * cameras.length)]
     const location = locations[Math.floor(Math.random() * locations.length)]
     const eventList = events[level]
     const event = eventList[Math.floor(Math.random() * eventList.length)]
-    
+
     const date = new Date(2024, 0, 15, Math.floor(Math.random() * 24), Math.floor(Math.random() * 60), Math.floor(Math.random() * 60))
-    
+
     records.push({
       id: i,
       level,
@@ -380,18 +455,18 @@ const generateMockData = (): WarningRecord[] => {
       camera,
       location: `${location}${Math.random() > 0.5 ? '东侧' : '中央'}`,
       title: `${camera} - ${location} ${event}`,
-      description: level === '严重警告' 
+      description: level === '严重警告'
         ? `系统检测到${Math.floor(Math.random() * 3) + 1}名工人在危险施工区域未佩戴安全帽，存在严重安全隐患。建议立即处理并加强安全教育。`
         : level === '一般警告'
-        ? `检测到人员在${location}停留时间过长，可能存在安全帽佩戴不规范的情况，建议关注。`
-        : `所有人员均正确佩戴安全帽，安全状况良好。系统运行正常。`,
+          ? `检测到人员在${location}停留时间过长，可能存在安全帽佩戴不规范的情况，建议关注。`
+          : `所有人员均正确佩戴安全帽，安全状况良好。系统运行正常。`,
       personCount: Math.floor(Math.random() * 5) + 1,
       confidence: Math.floor(Math.random() * 10) + 90,
       screenshotText: level === '严重警告' ? '严重警告截图' : level === '一般警告' ? '警告截图' : '正常截图',
       processed: Math.random() > 0.3
     })
   }
-  
+
   return records.sort((a, b) => new Date(b.datetime).getTime() - new Date(a.datetime).getTime())
 }
 
@@ -474,6 +549,41 @@ const deleteSelected = (): void => {
 
 const generateReport = (): void => {
   alert('生成报告功能')
+}
+
+// 弹窗相关方法
+const showDetail = (record: WarningRecord): void => {
+  selectedRecord.value = record
+  showDetailModal.value = true
+}
+
+const closeDetail = (): void => {
+  showDetailModal.value = false
+  selectedRecord.value = null
+}
+
+const markAsProcessed = (): void => {
+  if (selectedRecord.value) {
+    selectedRecord.value.processed = true
+    // 更新原始数据中的记录
+    const index = allRecords.value.findIndex(r => r.id === selectedRecord.value!.id)
+    if (index !== -1) {
+      allRecords.value[index].processed = true
+    }
+    alert('已标记为处理完成')
+  }
+}
+
+const downloadScreenshot = (): void => {
+  if (selectedRecord.value) {
+    alert(`下载 ${selectedRecord.value.screenshotText} 功能`)
+  }
+}
+
+const generateDetailReport = (): void => {
+  if (selectedRecord.value) {
+    alert(`生成 ${selectedRecord.value.title} 的详细报告功能`)
+  }
 }
 
 // 生命周期
