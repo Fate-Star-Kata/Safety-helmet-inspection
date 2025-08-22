@@ -1,15 +1,18 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
+  <Motion :initial="pageVariants.initial" :animate="pageVariants.animate" :transition="pageVariants.transition as any" class="min-h-screen bg-gray-50 p-6">
     <!-- 页面头部 -->
-    <div class="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6 rounded-lg mb-6">
+    <Motion :initial="{ opacity: 0, y: -20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.5, delay: 0.1 }">
+      <div class="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6 rounded-lg mb-6">
       <div class="max-w-7xl mx-auto">
         <h1 class="text-3xl font-bold mb-2">警告历史记录</h1>
         <p class="text-slate-200">查看和管理工地安全帽检测系统的历史警告信息</p>
       </div>
     </div>
+    </Motion>
 
     <!-- 筛选区域 -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.2 } as any">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
         <!-- 开始日期 -->
         <div class="form-control">
@@ -65,9 +68,11 @@
         </div>
       </div>
     </div>
+    </Motion>
 
     <!-- 统计模块 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <Motion :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.3 }">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between">
           <div>
@@ -132,6 +137,7 @@
         </div>
       </div>
     </div>
+    </Motion>
 
     <!-- 操作区 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -155,7 +161,8 @@
     </div>
 
     <!-- 警告记录列表 -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <Motion :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.4 }">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
       <div class="p-6 border-b border-gray-200">
         <h2 class="text-xl font-semibold text-gray-800">警告记录</h2>
       </div>
@@ -351,11 +358,13 @@
         </div>
       </div>
     </div>
-  </div>
+    </Motion>
+  </Motion>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { Motion } from 'motion-v'
 
 // 接口定义
 interface WarningRecord {
@@ -384,6 +393,19 @@ interface Stats {
   warning: number
   info: number
   completionRate: number
+}
+
+// 动画配置
+const pageVariants = {
+  initial: { opacity: 0, y: 30 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, ease: 'easeOut' }
+}
+
+const cardVariants = {
+  initial: { opacity: 0, scale: 0.9 },
+  animate: { opacity: 1, scale: 1 },
+  transition: { duration: 0.5, ease: 'easeOut' }
 }
 
 // 响应式数据

@@ -1,7 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <Motion v-bind="pageVariants">
+    <div class="min-h-screen bg-gray-50">
     <!-- 页面头部 -->
-    <div class="hero bg-gradient-to-r from-slate-700 to-slate-800 text-white py-16">
+    <Motion :initial="{ opacity: 0, y: -20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.1 }">
+      <div class="hero bg-gradient-to-r from-slate-700 to-slate-800 text-white py-16">
       <div class="hero-content text-center">
         <div class="max-w-md">
           <h1 class="mb-5 text-5xl font-bold">欢迎使用工地安全帽检测系统</h1>
@@ -11,10 +13,12 @@
         </div>
       </div>
     </div>
+    </Motion>
 
     <div class="container mx-auto px-4 py-8">
       <!-- 统计模块 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.2 } as any">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="stat bg-white rounded-lg shadow-lg border border-gray-200">
           <div class="stat-figure text-slate-600">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -66,8 +70,10 @@
           <div class="stat-value text-green-600">{{ stats.accuracy }}</div>
         </div>
       </div>
+      </Motion>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Motion :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.3 }">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- 操作区 -->
         <div class="lg:col-span-1">
           <div class="card bg-white shadow-xl border border-gray-200">
@@ -184,12 +190,28 @@
           </div>
         </div>
       </div>
+      </Motion>
     </div>
   </div>
+  </Motion>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Motion } from 'motion-v'
+
+// 动画配置
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 }
+}
+
+const cardVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 }
+}
 
 // 统计数据
 const stats = ref({
