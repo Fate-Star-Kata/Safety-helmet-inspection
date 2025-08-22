@@ -43,7 +43,7 @@
                     {{ renderMode === 'canvas' ? '切换到Video模式' : '切换到Canvas模式' }}
                   </button>
                   <button @click="exportWarnings" class="btn btn-sm bg-blue-600 hover:bg-blue-700 text-white border-0">
-                    导出警告记录
+                    导出警告CSV
                   </button>
                   <button @click="resetWarnings"
                     class="btn btn-sm bg-orange-600 hover:bg-orange-700 text-white border-0">
@@ -153,19 +153,19 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 class="text-lg font-semibold text-gray-800 mb-4">实时警告</h3>
               <div class="space-y-3 max-h-80 overflow-y-auto">
-                <div v-for="warning in warnings" :key="warning.datetime" class="p-3 rounded-lg border-l-4"
-                  :class="warning.type === '严重警告' ? 'bg-red-50 border-red-400' : 'bg-yellow-50 border-yellow-400'">
+                <div v-for="warning in warnings" :key="warning.id" class="p-3 rounded-lg border-l-4"
+                  :class="getWarningLevelInfo(warning.warning_level).class">
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
                       <div class="flex items-center gap-2 mb-1">
                         <span class="text-xs px-2 py-1 rounded"
-                          :class="warning.type === '严重警告' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'">
-                          {{ warning.type }}
+                          :class="getWarningLevelInfo(warning.warning_level).textClass">
+                          {{ getWarningLevelInfo(warning.warning_level).text }}
                         </span>
-                        <span class="text-xs text-gray-500">{{ warning.camera }}</span>
+                        <span class="text-xs text-gray-500">{{ warning.camera_name }}</span>
                       </div>
-                      <p class="text-sm text-gray-700">{{ warning.event }}</p>
-                      <p class="text-xs text-gray-500 mt-1">{{ formatDateTime(warning.datetime) }}</p>
+                      <p class="text-sm text-gray-700">{{ warning.title }}</p>
+                      <p class="text-xs text-gray-500 mt-1">{{ formatDateTime(warning.created_at) }}</p>
                     </div>
                   </div>
                 </div>
@@ -193,7 +193,7 @@
                       d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
                       clip-rule="evenodd" />
                   </svg>
-                  导出警告记录
+                  导出警告CSV
                 </button>
 
                 <button @click="resetWarnings"
@@ -256,8 +256,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, onUnmounted, nextTick, onMounted } from 'vue'
 import { Motion } from 'motion-v'
+import { CameraController, formatCameraId } from '@/api/websocket/camera'
+import type { DetectionResult } from '@/api/websocket/ws_detection'
+import { getWarnings } from '@/api/inspection/API'
+import type { Warning } from '@/types/apis/inspection_T'
 
 interface Camera {
   id: number
@@ -265,14 +269,10 @@ interface Camera {
   stream: MediaStream | null
   deviceId?: string
   label?: string
+  detectorId?: string
 }
 
-interface Warning {
-  type: string
-  camera: string
-  event: string
-  datetime: string
-}
+// Warning interface is imported from types
 
 interface Stats {
   onlinePeople: number
@@ -290,6 +290,9 @@ const renderMode = ref<'canvas' | 'video'>('canvas')
 const canvasRefs = ref<Map<number, HTMLCanvasElement>>(new Map())
 const videoRefs = ref<Map<number, HTMLVideoElement>>(new Map())
 const videoElements = ref<Map<number, HTMLVideoElement>>(new Map())
+const controllers = ref<Map<number, CameraController>>(new Map())
+const detectionResults = ref<Map<number, DetectionResult>>(new Map())
+const lastDetectionResults = ref<Map<number, DetectionResult>>(new Map())
 
 // 动画配置
 const pageVariants = {
@@ -305,64 +308,94 @@ const cardVariants = {
 }
 
 // 警告数据
-const warnings = ref<Warning[]>([
-  {
-    type: "一般警告",
-    camera: "#4",
-    event: "检测到人员聚集",
-    datetime: "2025-08-21T17:05:44"
-  },
-  {
-    type: "一般警告",
-    camera: "#4",
-    event: "检测到人员聚集",
-    datetime: "2025-08-21T17:05:34"
-  },
-  {
-    type: "一般警告",
-    camera: "#2",
-    event: "检测到可疑行为",
-    datetime: "2025-08-21T17:05:24"
-  },
-  {
-    type: "一般警告",
-    camera: "#4",
-    event: "检测到人员聚集",
-    datetime: "2025-08-21T17:05:14"
-  },
-  {
-    type: "一般警告",
-    camera: "#2",
-    event: "检测到可疑行为",
-    datetime: "2025-08-21T17:05:04"
-  },
-  {
-    type: "一般警告",
-    camera: "#4",
-    event: "检测到人员聚集",
-    datetime: "2025-08-21T17:04:54"
-  },
-  {
-    type: "严重警告",
-    camera: "#3",
-    event: "危险区域有人员未佩戴安全帽",
-    datetime: "2025-08-21T17:04:44"
-  },
-  {
-    type: "严重警告",
-    camera: "#3",
-    event: "危险区域有人员未佩戴安全帽",
-    datetime: "2025-08-21T17:04:34"
-  }
-])
+const warnings = ref<Warning[]>([])
 
 // 实时统计数据
 const stats = ref<Stats>({
-  onlinePeople: 8,
-  withHelmet: 6,
-  withoutHelmet: 2,
-  complianceRate: 75
+  onlinePeople: 0,
+  withHelmet: 0,
+  withoutHelmet: 0,
+  complianceRate: 0
 })
+
+// 计算实时统计数据
+const updateStats = () => {
+  let totalPeople = 0
+  let withHelmet = 0
+  let withoutHelmet = 0
+
+  // 遍历所有摄像头的最后检测结果
+  lastDetectionResults.value.forEach((result) => {
+    if (result && result.detections) {
+      result.detections.forEach((detection) => {
+        totalPeople++
+        if (detection.detection_type === 'wearing_hat') {
+          withHelmet++
+        } else if (detection.detection_type === 'no_hat') {
+          withoutHelmet++
+        }
+      })
+    }
+  })
+
+  // 更新统计数据
+  stats.value.onlinePeople = totalPeople
+  stats.value.withHelmet = withHelmet
+  stats.value.withoutHelmet = withoutHelmet
+  stats.value.complianceRate = totalPeople > 0 ? Math.round((withHelmet / totalPeople) * 100) : 0
+}
+
+let warningInterval: number | undefined;
+
+const fetchWarnings = async () => {
+  try {
+    const res = await getWarnings({ page: 1, page_size: 20 })
+    console.log('API响应:', res)
+    if (res.data && res.data.warnings) {
+      warnings.value = res.data.warnings
+      console.log('获取到的警告数据:', warnings.value)
+    }
+  } catch (error) {
+    console.error('获取警告数据失败:', error)
+  }
+}
+
+const getWarningLevelInfo = (level: 'info' | 'warning' | 'critical') => {
+  switch (level) {
+    case 'critical':
+      return { text: '严重警告', class: 'bg-red-50 border-red-400', textClass: 'bg-red-100 text-red-700' }
+    case 'warning':
+      return { text: '一般警告', class: 'bg-yellow-50 border-yellow-400', textClass: 'bg-yellow-100 text-yellow-700' }
+    default:
+      return { text: '信息', class: 'bg-blue-50 border-blue-400', textClass: 'bg-blue-100 text-blue-700' }
+  }
+}
+
+const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+}
+
+// 在组件挂载时获取警告数据并设置定时器
+onMounted(() => {
+  fetchWarnings()
+  warningInterval = window.setInterval(fetchWarnings, 60000) // 每分钟刷新一次
+})
+
+// 在组件卸载时清理定时器
+onUnmounted(() => {
+  if (warningInterval) {
+    clearInterval(warningInterval)
+  }
+})
+
 
 // 放大预览
 const previewCanvasEl = ref<HTMLCanvasElement | null>(null)
@@ -384,7 +417,7 @@ const setCanvasRef = async (cameraId: number, el: HTMLCanvasElement | null) => {
     
     // 开始绘制到canvas
     video.addEventListener('loadedmetadata', () => {
-      drawVideoToCanvas(video, el)
+      drawVideoToCanvas(video, el, cameraId)
     })
     
     try {
@@ -409,7 +442,7 @@ const setVideoRef = (cameraId: number, el: HTMLVideoElement | null) => {
 }
 
 // 将视频帧绘制到canvas
-const drawVideoToCanvas = (video: HTMLVideoElement, canvas: HTMLCanvasElement) => {
+const drawVideoToCanvas = (video: HTMLVideoElement, canvas: HTMLCanvasElement, camId?: number) => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   
@@ -424,7 +457,7 @@ const drawVideoToCanvas = (video: HTMLVideoElement, canvas: HTMLCanvasElement) =
       const videoAspect = video.videoWidth / video.videoHeight
       const canvasAspect = canvas.width / canvas.height
       
-      let drawWidth, drawHeight, drawX, drawY
+      let drawWidth: number, drawHeight: number, drawX: number, drawY: number
       
       if (videoAspect > canvasAspect) {
         // 视频更宽，以canvas宽度为准
@@ -443,6 +476,29 @@ const drawVideoToCanvas = (video: HTMLVideoElement, canvas: HTMLCanvasElement) =
       // 清除canvas并绘制视频帧
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(video, drawX, drawY, drawWidth, drawHeight)
+
+      // 在Canvas模式下叠加绘制检测框
+      if (renderMode.value === 'canvas' && camId != null) {
+        const result = detectionResults.value.get(camId)
+        if (result && result.detections && result.detections.length) {
+          const scaleX = drawWidth / video.videoWidth
+          const scaleY = drawHeight / video.videoHeight
+          ctx.save()
+          ctx.lineWidth = 2
+          for (const det of result.detections) {
+            const { x: bboxX, y: bboxY, width: bboxWidth, height: bboxHeight } = det.bbox
+            const x = drawX + bboxX * scaleX
+            const y = drawY + bboxY * scaleY
+            const w = bboxWidth * scaleX
+            const h = bboxHeight * scaleY
+            ctx.strokeStyle = det.detection_type === 'wearing_hat' ? '#22c55e' : (det.detection_type === 'no_hat' ? '#ef4444' : '#f59e0b')
+            ctx.beginPath()
+            ctx.rect(x, y, w, h)
+            ctx.stroke()
+          }
+          ctx.restore()
+        }
+      }
     }
     
     // 继续下一帧
@@ -469,7 +525,7 @@ const setPreviewCanvasRef = (el: HTMLCanvasElement | null) => {
     
     previewVideoEl.value.addEventListener('loadedmetadata', () => {
       if (previewVideoEl.value && el) {
-        drawVideoToCanvas(previewVideoEl.value, el)
+        drawVideoToCanvas(previewVideoEl.value, el, selectedCamera.value?.id)
       }
     })
     
@@ -495,7 +551,7 @@ const openPreview = async (camera: Camera) => {
       
       previewVideoEl.value.addEventListener('loadedmetadata', () => {
         if (previewVideoEl.value && previewCanvasEl.value) {
-          drawVideoToCanvas(previewVideoEl.value, previewCanvasEl.value)
+          drawVideoToCanvas(previewVideoEl.value, previewCanvasEl.value, selectedCamera.value?.id)
         }
       })
       
@@ -544,7 +600,8 @@ const getAvailableCameras = async () => {
     active: false,
     stream: null,
     deviceId: d.deviceId,
-    label: d.label || `摄像头 ${i + 1}`
+    label: d.label || `摄像头 ${i + 1}`,
+    detectorId: formatCameraId(i + 1)
   }))
 }
 
@@ -593,6 +650,19 @@ const toggleCamera = async (id: number) => {
       video.srcObject = null
       video.pause()
     }
+
+    // 停止并断开检测
+    const controller = controllers.value.get(id)
+    if (controller) {
+      controller.stopDetection()
+      controller.disconnect()
+      controllers.value.delete(id)
+    }
+    
+    // 清理检测结果并更新统计
+    detectionResults.value.delete(id)
+    lastDetectionResults.value.delete(id)
+    updateStats()
   } else {
     // 开启摄像头
     try {
@@ -615,9 +685,20 @@ const toggleCamera = async (id: number) => {
           video.playsInline = true
           videoElements.value.set(id, video)
           
-          // 开始绘制到canvas
+          // 开始绘制到canvas，并启动检测
           video.addEventListener('loadedmetadata', () => {
-            drawVideoToCanvas(video, canvas)
+            drawVideoToCanvas(video, canvas, id)
+            let controller = controllers.value.get(id)
+            if (!controller) {
+              controller = new CameraController(camera.detectorId || formatCameraId(id), (result) => {
+                detectionResults.value.set(id, result)
+                lastDetectionResults.value.set(id, result)
+                updateStats()
+              })
+              controllers.value.set(id, controller)
+            }
+            controller.setSource(video)
+            controller.startDetection()
           })
           
           try {
@@ -631,6 +712,20 @@ const toggleCamera = async (id: number) => {
         const video = videoRefs.value.get(id)
         if (video) {
           video.srcObject = stream
+          // 启动检测使用页面video元素
+          video.addEventListener('loadedmetadata', () => {
+            let controller = controllers.value.get(id)
+            if (!controller) {
+              controller = new CameraController(camera.detectorId || formatCameraId(id), (result) => {
+                detectionResults.value.set(id, result)
+                lastDetectionResults.value.set(id, result)
+                updateStats()
+              })
+              controllers.value.set(id, controller)
+            }
+            controller.setSource(video)
+            controller.startDetection()
+          })
           try {
             await video.play()
           } catch (playError) {
@@ -653,31 +748,47 @@ const toggleAllCameras = () => {
   })
 }
 
-// 格式化时间
-const formatDateTime = (datetime: string) => {
-  const date = new Date(datetime)
-  return date.toLocaleString('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
-}
+// 格式化时间函数已在上方定义
 
-// 导出警告记录
+// 导出警告记录为CSV（UTF-8格式）
 const exportWarnings = () => {
-  const csvContent = "data:text/csv;charset=utf-8," + 
-    "警告类型,摄像头,事件,时间\n" +
-    warnings.value.map(w => `${w.type},${w.camera},${w.event},${w.datetime}`).join("\n")
+  if (warnings.value.length === 0) {
+    alert('没有可导出的警告记录')
+    return
+  }
   
-  const encodedUri = encodeURI(csvContent)
-  const link = document.createElement("a")
-  link.setAttribute("href", encodedUri)
-  link.setAttribute("download", `警告记录_${new Date().toISOString().split('T')[0]}.csv`)
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+  try {
+    // 创建CSV内容
+    const headers = ['警告级别', '摄像头', '标题', '时间']
+    const csvContent = [
+      headers.join(','), // 表头
+      ...warnings.value.map(warning => {
+        const level = warning.warning_level === 'critical' ? '严重警告' : 
+                     warning.warning_level === 'warning' ? '一般警告' : '信息'
+        const camera = warning.camera_name || ''
+        const title = warning.title ? `"${warning.title.replace(/"/g, '""')}"` : ''
+        const time = formatDateTime(warning.created_at)
+        return [level, camera, title, time].join(',')
+      })
+    ].join('\n')
+
+    // 添加UTF-8 BOM以确保中文正确显示
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' })
+    
+    // 创建下载链接
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `实时警告记录_${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('导出警告记录失败:', error)
+    alert('导出失败，请重试')
+  }
 }
 
 // 重置警告
@@ -758,6 +869,10 @@ onUnmounted(() => {
     video.pause()
   })
   videoRefs.value.clear()
+
+  // 断开所有控制器
+  controllers.value.forEach(c => c.disconnect())
+  controllers.value.clear()
   
   // 清理预览video元素
   if (previewVideoEl.value) {

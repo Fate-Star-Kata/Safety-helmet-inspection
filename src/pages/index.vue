@@ -19,57 +19,70 @@
       <!-- 统计模块 -->
       <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.2 } as any">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="stat bg-white rounded-lg shadow-lg border border-gray-200">
-          <div class="stat-figure text-slate-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              class="inline-block w-8 h-8 stroke-current">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z">
-              </path>
-            </svg>
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">总检测数</p>
+                <p class="text-3xl font-bold text-blue-600">{{ stats.totalDetections }}</p>
+              </div>
+              <div class="p-3 bg-blue-100 rounded-full">
+                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd"
+                    d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"
+                    clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
           </div>
-          <div class="stat-title text-gray-600">在线摄像头</div>
-          <div class="stat-value text-slate-700">{{ stats.cameras }}</div>
-        </div>
 
-        <div class="stat bg-white rounded-lg shadow-lg border border-gray-200">
-          <div class="stat-figure text-slate-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              class="inline-block w-8 h-8 stroke-current">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-              </path>
-            </svg>
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">合规率</p>
+                <p class="text-3xl font-bold text-green-600">{{ stats.complianceRate }}%</p>
+              </div>
+              <div class="p-3 bg-green-100 rounded-full">
+                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
           </div>
-          <div class="stat-title text-gray-600">今日检测人次</div>
-          <div class="stat-value text-slate-700">{{ stats.detections }}</div>
-        </div>
 
-        <div class="stat bg-white rounded-lg shadow-lg border border-gray-200">
-          <div class="stat-figure text-orange-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              class="inline-block w-8 h-8 stroke-current">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z">
-              </path>
-            </svg>
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">总警告数</p>
+                <p class="text-3xl font-bold text-orange-600">{{ stats.totalWarnings }}</p>
+              </div>
+              <div class="p-3 bg-orange-100 rounded-full">
+                <svg class="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
           </div>
-          <div class="stat-title text-gray-600">今日警告次数</div>
-          <div class="stat-value text-orange-600">{{ stats.warnings }}</div>
-        </div>
 
-        <div class="stat bg-white rounded-lg shadow-lg border border-gray-200">
-          <div class="stat-figure text-green-600">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              class="inline-block w-8 h-8 stroke-current">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">活跃摄像头</p>
+                <p class="text-3xl font-bold text-purple-600">{{ stats.activeCameras }}</p>
+              </div>
+              <div class="p-3 bg-purple-100 rounded-full">
+                <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd"
+                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                    clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
           </div>
-          <div class="stat-title text-gray-600">检测准确率</div>
-          <div class="stat-value text-green-600">{{ stats.accuracy }}</div>
         </div>
-      </div>
       </Motion>
 
       <Motion :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.3 }">
@@ -123,27 +136,15 @@
             <div class="card-body">
               <h2 class="card-title text-2xl mb-4 text-gray-800">最新警告信息</h2>
               <div class="space-y-4">
-                <div class="alert bg-orange-50 border border-orange-200 text-orange-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6 text-orange-600"
-                    fill="none" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                <div v-for="warning in warnings" :key="warning.id" :class="getWarningLevelInfo(warning.warning_level).alertClass">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" :class="getWarningLevelInfo(warning.warning_level).iconClass" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                   <div>
-                    <h3 class="font-bold text-orange-800">警告</h3>
-                    <div class="text-xs text-orange-700">摄像头#3检测到未佩戴安全帽人员 - 2024年1月15日 14:30</div>
-                  </div>
-                </div>
-
-                <div class="alert bg-red-50 border border-red-200 text-red-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6 text-red-600"
-                    fill="none" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div>
-                    <h3 class="font-bold text-red-800">严重警告</h3>
-                    <div class="text-xs text-red-700">摄像头#1检测到危险区域有人员未佩戴安全帽 - 2024年1月15日 13:45</div>
+                    <h3 class="font-bold" :class="getWarningLevelInfo(warning.warning_level).titleClass">{{ getWarningLevelInfo(warning.warning_level).label }}</h3>
+                    <div class="text-xs" :class="getWarningLevelInfo(warning.warning_level).textClass">
+                      {{ warning.camera_name }}检测到{{ warning.title }} - {{ formatDateTime(warning.created_at) }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -168,22 +169,22 @@
             <h2 class="card-title text-2xl mb-4 text-gray-800">系统信息</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div class="flex flex-col">
-                <span class="text-sm text-gray-500">检测算法</span>
-                <span class="font-semibold text-gray-800">YOLOv11</span>
+                <span class="text-sm text-gray-500">模型名称</span>
+                <span class="font-semibold text-gray-800">{{ systemInfo?.name || '加载中...' }}</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-gray-500">系统版本</span>
-                <span class="font-semibold text-gray-800">v2.1.0</span>
+                <span class="text-sm text-gray-500">模型路径</span>
+                <span class="font-semibold text-gray-800">{{ systemInfo?.model_path || '加载中...' }}</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-sm text-gray-500">最后更新</span>
-                <span class="font-semibold text-gray-800">2024年1月10日</span>
+                <span class="text-sm text-gray-500">置信度阈值</span>
+                <span class="font-semibold text-gray-800">{{ systemInfo?.confidence_threshold || '加载中...' }}</span>
               </div>
               <div class="flex flex-col">
                 <span class="text-sm text-gray-500">运行状态</span>
-                <span class="font-semibold text-green-600 flex items-center">
-                  <span class="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-                  正常运行
+                <span class="font-semibold flex items-center" :class="systemInfo?.is_active ? 'text-green-600' : 'text-red-600'">
+                  <span class="w-2 h-2 rounded-full mr-2" :class="systemInfo?.is_active ? 'bg-green-600' : 'bg-red-600'"></span>
+                  {{ systemInfo?.is_active ? '正常运行' : '已停用' }}
                 </span>
               </div>
             </div>
@@ -197,8 +198,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Motion } from 'motion-v'
+import { getWarnings, getModels } from '@/api/inspection/API'
+import type { Warning, ModelInfo } from '@/types/apis/inspection_T'
 
 // 动画配置
 const pageVariants = {
@@ -213,12 +216,107 @@ const cardVariants = {
   transition: { duration: 0.6 }
 }
 
-// 统计数据
-const stats = ref({
-  cameras: 20,
-  detections: 127,
-  warnings: 3,
-  accuracy: '98.5%'
+// 统计数据 - 与statistics/index.vue保持一致
+const stats = computed(() => {
+  const totalWarnings = warnings.value.length
+  const criticalWarnings = warnings.value.filter(w => w.warning_level === 'critical').length
+  const warningLevel = warnings.value.filter(w => w.warning_level === 'warning').length
+  const infoLevel = warnings.value.filter(w => w.warning_level === 'info').length
+  
+  // 模拟总检测数和合规率数据
+  const totalDetections = 1250
+  const complianceRate = 96.8
+  const activeCameras = 8
+  
+  return {
+    totalDetections,
+    complianceRate,
+    totalWarnings,
+    activeCameras
+  }
+})
+
+const warnings = ref<Warning[]>([])
+const systemInfo = ref<ModelInfo | null>(null)
+let warningInterval: any = null
+
+const getWarningLevelInfo = (level: 'info' | 'warning' | 'critical') => {
+  switch (level) {
+    case 'warning':
+      return {
+        label: '一般警告',
+        alertClass: 'alert bg-orange-50 border border-orange-200 text-orange-800',
+        iconClass: 'text-orange-600',
+        titleClass: 'text-orange-800',
+        textClass: 'text-orange-700'
+      }
+    case 'critical':
+      return {
+        label: '严重警告',
+        alertClass: 'alert bg-red-50 border border-red-200 text-red-800',
+        iconClass: 'text-red-600',
+        titleClass: 'text-red-800',
+        textClass: 'text-red-700'
+      }
+    default:
+      return {
+        label: '通知',
+        alertClass: 'alert bg-blue-50 border border-blue-200 text-blue-800',
+        iconClass: 'text-blue-600',
+        titleClass: 'text-blue-800',
+        textClass: 'text-blue-700'
+      }
+  }
+}
+
+const formatDateTime = (dateString: string) => {
+  return new Date(dateString).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+}
+
+const fetchWarnings = async () => {
+  try {
+    const res = await getWarnings({ page: 1, page_size: 5 })
+    console.log('获取警告数据:', res)
+    warnings.value = res.data.warnings
+  } catch (error) {
+    console.error('获取警告信息失败:', error)
+  }
+}
+
+const fetchSystemInfo = async () => {
+  try {
+    const res = await getModels({ page: 1, page_size: 10 })
+    console.log('获取模型数据:', res)
+    if (res.data.models.length > 0) {
+      // 使用最后一项模型数据
+      systemInfo.value = res.data.models[res.data.models.length - 1]
+    }
+  } catch (error) {
+    console.error('获取系统信息失败:', error)
+  }
+}
+
+onMounted(() => {
+  fetchWarnings()
+  fetchSystemInfo()
+  // 每分钟刷新警告和系统信息
+  warningInterval = setInterval(() => {
+    fetchWarnings()
+    fetchSystemInfo()
+  }, 60000)
+})
+
+onUnmounted(() => {
+  if (warningInterval) {
+    clearInterval(warningInterval)
+  }
 })
 </script>
 
