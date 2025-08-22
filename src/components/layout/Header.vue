@@ -99,7 +99,6 @@ provide('toggleSubmenu', toggleSubmenu)
       </div>
       <component :is="icon" class="w-10 h-10" size="20px" />
       <a href="/" class="btn btn-ghost text-xl">{{ serverConfig.VITE_APP_TITLE }}</a>
-      <search />
     </div>
     <div class="navbar-center hidden lg:flex">
       <ul class="menu lg:menu-horizontal rounded-box">

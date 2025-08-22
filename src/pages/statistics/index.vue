@@ -1,16 +1,20 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <Motion v-bind="pageVariants">
+    <div class="min-h-screen bg-gray-50">
     <!-- 页面头部 -->
-    <div class="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6">
+    <Motion :initial="{ opacity: 0, y: -20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.1 }">
+      <div class="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6">
       <div class="max-w-7xl mx-auto">
         <h1 class="text-3xl font-bold mb-2">📊 统计信息</h1>
         <p class="text-slate-200">工地安全帽检测系统的详细数据分析和统计报告</p>
       </div>
     </div>
+    </Motion>
 
     <div class="max-w-7xl mx-auto p-6">
       <!-- 时间筛选 -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <Motion v-bind="cardVariants" :transition="{ ...cardVariants.transition, delay: 0.2 } as any">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">时间筛选</h2>
         <div class="flex flex-wrap gap-3">
           <button 
@@ -24,9 +28,11 @@
           </button>
         </div>
       </div>
+      </Motion>
 
       <!-- 统计概览 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <Motion :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.3 }">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div class="bg-gradient-to-br from-slate-700 to-slate-800 text-white p-6 rounded-lg shadow-sm">
           <div class="text-3xl font-bold mb-2">{{ stats.totalDetections.toLocaleString() }}</div>
           <div class="text-slate-200 text-sm">总检测次数</div>
@@ -44,8 +50,10 @@
           <div class="text-blue-100 text-sm">平均响应时间</div>
         </div>
       </div>
+      </Motion>
 
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+      <Motion :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.4 }">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
         <!-- 检测趋势图 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 class="text-lg font-semibold text-gray-800 mb-4">📈 检测趋势分析</h3>
@@ -80,9 +88,11 @@
           </div>
         </div>
       </div>
+      </Motion>
 
       <!-- 详细数据表 -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <Motion :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.5 }">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 详细统计数据</h3>
         <div class="overflow-x-auto">
           <table class="table table-zebra w-full">
@@ -118,9 +128,11 @@
           </table>
         </div>
       </div>
+      </Motion>
 
       <!-- 导出功能 -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <Motion :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ duration: 0.6, delay: 0.6 }">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">📥 数据导出</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button 
@@ -153,12 +165,15 @@
           </button>
         </div>
       </div>
+      </Motion>
     </div>
   </div>
+  </Motion>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { Motion } from 'motion-v'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, PieChart, BarChart } from 'echarts/charts'
@@ -204,6 +219,19 @@ interface CameraStats {
 interface TimePeriod {
   value: string
   label: string
+}
+
+// 动画配置
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 }
+}
+
+const cardVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6 }
 }
 
 // 响应式数据
